@@ -7,7 +7,7 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif;
             background: #0a0a0b;
             color: #f5f5f5;
             min-height: 100vh;
@@ -22,11 +22,7 @@
             flex-wrap: wrap;
             gap: 1.5rem;
         }
-        h1 {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #d4af37;
-        }
+        h1 { font-size: 2rem; font-weight: 700; color: #d4af37; }
         .search-input {
             padding: 0.75rem 1.25rem;
             background: #141416;
@@ -325,9 +321,16 @@
                 var r = list[i];
                 var card = document.createElement("div");
                 card.className = "record-card";
-                card.innerHTML = '<img src="' + r.image + '" alt="' + r.album + '" class="record-image" onerror="this.src=getPlaceholder()">' +
-                    '<div class="record-info">' +
-                    '<div class="record-header"><div><div class="record-artist">' + r.artist + '</div>' +
+                
+                var img = document.createElement("img");
+                img.src = r.image;
+                img.alt = r.album;
+                img.className = "record-image";
+                img.onerror = function() { this.src = getPlaceholder(); };
+                
+                var info = document.createElement("div");
+                info.className = "record-info";
+                info.innerHTML = '<div class="record-header"><div><div class="record-artist">' + r.artist + '</div>' +
                     '<div class="record-title">' + r.album + '</div></div>' +
                     '<span class="record-year">' + r.year + '</span></div>' +
                     '<div class="record-meta">' +
@@ -339,7 +342,10 @@
                     '<div class="value-chip"><span class="year-label">1980:</span><span class="price">' + r.value1980 + '</span></div>' +
                     '<div class="value-chip"><span class="year-label">2000:</span><span class="price">' + r.value2000 + '</span></div>' +
                     '<div class="value-chip"><span class="year-label">2025:</span><span class="price">' + r.value2025 + '</span></div>' +
-                    '</div></div>';
+                    '</div>';
+                
+                card.appendChild(img);
+                card.appendChild(info);
                 recordsGrid.appendChild(card);
             }
         }
