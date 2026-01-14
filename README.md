@@ -2,8 +2,6 @@
 
 A beautiful, searchable database for your vinyl record collection. Built with vanilla HTML, CSS, and JavaScript - no frameworks required.
 
-![Vinyl Vault Screenshot](screenshot.png)
-
 ## Features
 
 - 🔍 **Real-time search** - Filter by artist, album, year, label, or any text
