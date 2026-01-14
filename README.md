@@ -74,18 +74,7 @@ record-database/
 
 ## Current Collection
 
-| Artist | Album | Year |
-|--------|-------|------|
-| Cream | Heavy Cream | 1972 |
-| Cream | Live Cream Volume II | 1972 |
-| Rita Coolidge | Nice Feelin' | 1971 |
-| Sam Cooke | The Best of Sam Cooke | 1962 |
-| The Contours | Do You Love Me | 1962 |
-| Tommy Conwell | Walkin' on the Water | 1986 |
-| Commodores | All The Great Hits | 1982 |
-| Commodores | Midnight Magic | 1979 |
-| Commodores | In The Pocket | 1981 |
-| Phil Collins | Hello, I Must Be Going! | 1982 |
+
 
 ## License
 
