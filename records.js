@@ -1,5 +1,5 @@
 // Record Collection Database - Fred's Vinyl Vault
-// Total Records: 771
+// Total Records: 772
 
 var records = [
     { artist: "ABBA", album: "Greatest Hits", year: 1976, label: "Atlantic (SD 18189)", pressing: "Original US pressing", chartPosition: "#48 Billboard 200", interestingFact: "SOS, Waterloo, Mamma Mia, Fernando. First US hits compilation. Park bench cover.", value1980: "$5-8", value2000: "$12-20", value2025: "$22-38", value2025Num: 30, image: "images/PXL_20260112_184459989.MP~2.jpg" },
