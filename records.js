@@ -284,6 +284,19 @@ var records = [
     { artist: "The Smithereens", album: "Especially for You", year: 1986, label: "Enigma (ST-73209)", pressing: "Original US pressing", chartPosition: "#51 Billboard 200", interestingFact: "Blood and Roses. New Jersey power pop. Beatle-esque songcraft.", value1980: "N/A", value2000: "$10-18", value2025: "$15-28", value2025Num: 21, image: "images/PXL_20260112_201351497.MP.jpg" },
     { artist: "Various Artists", album: "Soul's Greatest Hits", year: 1970, label: "Bell", pressing: "Original US pressing", chartPosition: "N/A (compilation)", interestingFact: "Budget soul compilation with illustrated psychedelic cover.", value1980: "$3-5", value2000: "$5-10", value2025: "$8-15", value2025Num: 11, image: "images/PXL_20260112_201451921.jpg" },
     { artist: "Sonny & Cher", album: "The Best of Sonny & Cher", year: 1967, label: "Atco (SD 33-219)", pressing: "Original US stereo", chartPosition: "#23 Billboard 200", interestingFact: "I Got You Babe, The Beat Goes On. Pre-TV show era hits.", value1980: "$5-8", value2000: "$10-18", value2025: "$15-28", value2025Num: 21, image: "images/PXL_20260112_201502028.jpg" },
+    // ============================================================
+// BATCH 6 - 98 NEW RECORDS
+// Artists: Southside Johnny to John Entwistle
+// Add these entries to your existing records array in records.js
+// ============================================================
+// Instructions:
+// 1. Open your existing records.js file
+// 2. Find the closing "];" of the records array
+// 3. Replace it with a comma ","
+// 4. Paste all the records below (without the var declaration)
+// 5. Make sure the array ends with "];"
+// ============================================================
+
     { artist: "Southside Johnny & The Asbury Jukes", album: "I Don't Want to Go Home", year: 1976, label: "Epic (PE 34180)", pressing: "US Original", chartPosition: "Did not chart", interestingFact: "Debut album produced by Miami Steve Van Zandt. Features Bruce Springsteen on backing vocals.", value1980: "$6-10", value2000: "$12-18", value2025: "$30-45", value2025Num: 35, image: "images/PXL_20260112_201518351.jpg" },
     { artist: "Southside Johnny & The Asbury Jukes", album: "This Time It's for Real", year: 1977, label: "Epic (PE 34668)", pressing: "US Original", chartPosition: "#107 US", interestingFact: "Produced by Miami Steve Van Zandt. Includes three Springsteen-penned songs.", value1980: "$5-8", value2000: "$10-15", value2025: "$22-35", value2025Num: 28, image: "images/PXL_20260112_201534193.MP.jpg" },
     { artist: "Southside Johnny & The Asbury Jukes", album: "Hearts of Stone", year: 1978, label: "Epic (JE 35488)", pressing: "US Original", chartPosition: "#138 US", interestingFact: "Title track written by Bruce Springsteen. Considered the band\'s artistic peak.", value1980: "$5-8", value2000: "$10-15", value2025: "$25-38", value2025Num: 30, image: "images/PXL_20260112_201542279.jpg" },
