@@ -18,6 +18,7 @@
         input, select { padding: 12px 15px; border: none; border-radius: 25px; background: #2c3e50; color: #ecf0f1; font-size: 1em; outline: none; transition: all 0.3s; }
         input:focus, select:focus { box-shadow: 0 0 10px rgba(243, 156, 18, 0.5); }
         input[type="text"] { width: 300px; }
+        input[type="number"] { width: 100px; text-align: center; }
         .sort-buttons { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
         .sort-btn { padding: 10px 20px; border: 2px solid #3498db; border-radius: 25px; background: transparent; color: #3498db; cursor: pointer; transition: all 0.3s; }
         .sort-btn:hover, .sort-btn.active { background: #3498db; color: #fff; }
@@ -25,8 +26,11 @@
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
         .card { background: linear-gradient(145deg, #1e2a38 0%, #162029 100%); border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3); transition: transform 0.3s, box-shadow 0.3s; }
         .card:hover { transform: translateY(-5px); box-shadow: 0 15px 40px rgba(0,0,0,0.4); }
-        .card-image { height: 200px; background: #2c3e50; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .card-image img { width: 100%; height: 100%; object-fit: cover; }
+        .card-image { height: 350px; background: #2c3e50; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; position: relative; }
+        .card-image img { width: 100%; height: 100%; object-fit: contain; background: #1a1a2e; }
+        .card-image:hover img { object-fit: cover; }
+        .image-hint { position: absolute; bottom: 5px; right: 5px; background: rgba(0,0,0,0.6); color: #fff; padding: 3px 8px; border-radius: 10px; font-size: 0.7em; opacity: 0; transition: opacity 0.3s; }
+        .card-image:hover .image-hint { opacity: 1; }
         .no-image { color: #7f8c8d; font-size: 3em; }
         .card-content { padding: 20px; }
         .artist { font-size: 1.3em; font-weight: bold; color: #f39c12; margin-bottom: 5px; }
@@ -39,7 +43,33 @@
         .value-year { font-size: 0.75em; color: #7f8c8d; }
         .value-price { font-size: 1em; color: #2ecc71; font-weight: bold; }
         .no-results { text-align: center; padding: 50px; color: #7f8c8d; font-size: 1.2em; }
-        @media (max-width: 768px) { .header h1 { font-size: 1.8em; } input[type="text"] { width: 100%; } .grid { grid-template-columns: 1fr; } }
+        
+        /* Collection Info Section */
+        .collection-info { background: linear-gradient(145deg, #1e2a38 0%, #162029 100%); margin: 20px auto; max-width: 1600px; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .info-header { background: linear-gradient(90deg, #e74c3c 0%, #c0392b 100%); padding: 15px 25px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .info-header h2 { color: #fff; font-size: 1.4em; }
+        .info-toggle { color: #fff; font-size: 1.5em; transition: transform 0.3s; }
+        .info-toggle.open { transform: rotate(180deg); }
+        .info-content { padding: 0; max-height: 0; overflow: hidden; transition: max-height 0.5s ease, padding 0.5s ease; }
+        .info-content.open { padding: 25px; max-height: 2000px; }
+        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; }
+        .info-section { background: rgba(0,0,0,0.2); border-radius: 10px; padding: 20px; }
+        .info-section h3 { color: #f39c12; margin-bottom: 15px; font-size: 1.2em; border-bottom: 2px solid #f39c12; padding-bottom: 8px; }
+        .info-section ul { list-style: none; }
+        .info-section li { padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1); color: #bdc3c7; }
+        .info-section li:last-child { border-bottom: none; }
+        .highlight { color: #2ecc71; font-weight: bold; }
+        .info-section p { color: #bdc3c7; line-height: 1.6; }
+        .artist-badge { display: inline-block; background: #3498db; color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 0.85em; margin-right: 5px; }
+        .value-badge { background: #27ae60; }
+        
+        /* Lightbox for full image */
+        .lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; justify-content: center; align-items: center; cursor: zoom-out; }
+        .lightbox.active { display: flex; }
+        .lightbox img { max-width: 90%; max-height: 90%; object-fit: contain; border-radius: 10px; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
+        .lightbox-close { position: absolute; top: 20px; right: 30px; color: #fff; font-size: 2em; cursor: pointer; }
+        
+        @media (max-width: 768px) { .header h1 { font-size: 1.8em; } input[type="text"] { width: 100%; } .grid { grid-template-columns: 1fr; } .info-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -53,14 +83,96 @@
             <div class="stat"><div class="stat-value" id="yearRange">-</div><div class="stat-label">Year Range</div></div>
         </div>
     </div>
+    
+    <!-- Collection Info Section -->
+    <div class="collection-info">
+        <div class="info-header" onclick="toggleInfo()">
+            <h2>📚 About This Collection</h2>
+            <span class="info-toggle" id="infoToggle">▼</span>
+        </div>
+        <div class="info-content" id="infoContent">
+            <div class="info-grid">
+                <div class="info-section">
+                    <h3>🏆 Collection Highlights</h3>
+                    <ul>
+                        <li><span class="highlight">770 vinyl records</span> spanning 1957-2024</li>
+                        <li>Peak era: <span class="highlight">459 albums from the 1970s</span> (60% of collection)</li>
+                        <li>Estimated total value: <span class="highlight">$25,000-$40,000</span></li>
+                        <li>Focus on <span class="highlight">original US pressings</span> from major labels</li>
+                        <li>Includes <span class="highlight">rare bootlegs</span> and promotional items</li>
+                    </ul>
+                </div>
+                
+                <div class="info-section">
+                    <h3>💎 Complete/Near-Complete Discographies</h3>
+                    <ul>
+                        <li><span class="artist-badge">Led Zeppelin</span> Complete studio discography (9 albums) - <span class="highlight">$400-600 as set</span></li>
+                        <li><span class="artist-badge">The Rolling Stones</span> 29 albums including bootlegs - near complete 1964-1986</li>
+                        <li><span class="artist-badge">The Beatles</span> 21 albums - complete US Capitol/Apple releases</li>
+                        <li><span class="artist-badge">The Who</span> 19 albums - complete studio + live catalog</li>
+                        <li><span class="artist-badge">David Bowie</span> 17 albums - complete 1969-1984 era</li>
+                    </ul>
+                </div>
+                
+                <div class="info-section">
+                    <h3>💰 Most Valuable Records</h3>
+                    <ul>
+                        <li>The Who - <em>My Generation</em> (1965) - <span class="highlight value-badge">$160</span></li>
+                        <li>Bob Dylan - <em>Bob Dylan</em> (1962) - <span class="highlight value-badge">$150</span></li>
+                        <li>Atlantic R&B Box Set (14LP) - <span class="highlight value-badge">$137</span></li>
+                        <li>Bob Dylan - <em>Blonde on Blonde</em> - <span class="highlight value-badge">$130</span></li>
+                        <li>Buckingham Nicks (pre-Fleetwood Mac) - <span class="highlight value-badge">$115</span></li>
+                    </ul>
+                </div>
+                
+                <div class="info-section">
+                    <h3>🎸 Notable Artist Runs</h3>
+                    <ul>
+                        <li><span class="artist-badge">Bruce Springsteen</span> 12 albums including rare promo box</li>
+                        <li><span class="artist-badge">Rod Stewart</span> 12 albums - Faces era through solo peak</li>
+                        <li><span class="artist-badge">Bob Dylan</span> 11 albums - complete Columbia 60s catalog</li>
+                        <li><span class="artist-badge">The Kinks</span> 10 albums - British Invasion essentials</li>
+                        <li><span class="artist-badge">Eric Clapton</span> 8 albums - solo + Derek & the Dominos</li>
+                    </ul>
+                </div>
+                
+                <div class="info-section">
+                    <h3>🌟 What Makes This Collection Special</h3>
+                    <p>This collection represents a <span class="highlight">carefully curated journey through rock history</span>, with particular strength in:</p>
+                    <ul>
+                        <li><strong>British Invasion:</strong> Beatles, Stones, Who, Kinks, Yardbirds</li>
+                        <li><strong>Progressive Rock:</strong> Yes, ELP, Jethro Tull, King Crimson</li>
+                        <li><strong>Punk/New Wave:</strong> Clash, Police, Pretenders, Elvis Costello</li>
+                        <li><strong>Classic Soul:</strong> Otis Redding, Stevie Wonder, Aretha Franklin</li>
+                        <li><strong>Pete Townshend Archive:</strong> 7 solo albums + 19 Who albums</li>
+                    </ul>
+                </div>
+                
+                <div class="info-section">
+                    <h3>📦 Premium Set Values</h3>
+                    <p>These artist collections command premium prices when sold together:</p>
+                    <ul>
+                        <li>Complete Led Zeppelin (9 LPs): <span class="highlight">$400-600</span></li>
+                        <li>Beatles US Capitol Collection: <span class="highlight">$600-900</span></li>
+                        <li>Rolling Stones 1964-1972: <span class="highlight">$500-800</span></li>
+                        <li>The Who Complete: <span class="highlight">$450-700</span></li>
+                        <li>David Bowie 70s Run: <span class="highlight">$350-500</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <div class="controls">
         <input type="text" id="search" placeholder="🔍 Search artist, album, label...">
+        <input type="number" id="yearSearch" placeholder="Year" min="1950" max="2030">
         <select id="decadeFilter">
             <option value="">All Decades</option>
+            <option value="1950">Before 1960</option>
             <option value="1960">1960s</option>
             <option value="1970">1970s</option>
             <option value="1980">1980s</option>
-            <option value="1990">1990s</option>
+            <option value="1990">After 1990</option>
         </select>
         <div class="sort-buttons">
             <button class="sort-btn active" data-sort="artist">Artist A-Z</button>
@@ -72,6 +184,12 @@
     <div class="container">
         <div class="grid" id="recordGrid"></div>
         <div class="no-results" id="noResults" style="display:none;">No records found matching your search.</div>
+    </div>
+    
+    <!-- Lightbox for full-size images -->
+    <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+        <span class="lightbox-close">&times;</span>
+        <img id="lightboxImg" src="" alt="Full size album cover">
     </div>
     <script>
 var records = [
@@ -864,6 +982,31 @@ var records = [
         let currentSort = 'artist';
         let currentDecade = '';
         let searchTerm = '';
+        let yearFilter = '';
+
+        function toggleInfo() {
+            const content = document.getElementById('infoContent');
+            const toggle = document.getElementById('infoToggle');
+            content.classList.toggle('open');
+            toggle.classList.toggle('open');
+        }
+
+        function openLightbox(imgSrc) {
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightboxImg');
+            lightboxImg.src = imgSrc;
+            lightbox.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeLightbox();
+        });
 
         function updateStats() {
             const artists = [...new Set(records.map(r => r.artist))];
@@ -881,9 +1024,19 @@ var records = [
                     r.artist.toLowerCase().includes(searchTerm) ||
                     r.album.toLowerCase().includes(searchTerm) ||
                     (r.label && r.label.toLowerCase().includes(searchTerm));
-                const matchesDecade = !currentDecade || 
-                    (r.year >= parseInt(currentDecade) && r.year < parseInt(currentDecade) + 10);
-                return matchesSearch && matchesDecade;
+                
+                const matchesYear = !yearFilter || r.year === parseInt(yearFilter);
+                
+                let matchesDecade = true;
+                if (currentDecade === '1950') {
+                    matchesDecade = r.year < 1960;
+                } else if (currentDecade === '1990') {
+                    matchesDecade = r.year >= 1990;
+                } else if (currentDecade) {
+                    matchesDecade = r.year >= parseInt(currentDecade) && r.year < parseInt(currentDecade) + 10;
+                }
+                
+                return matchesSearch && matchesDecade && matchesYear;
             });
             
             filtered.sort((a, b) => {
@@ -912,8 +1065,8 @@ var records = [
             
             grid.innerHTML = filtered.map(r => `
                 <div class="card">
-                    <div class="card-image">
-                        ${r.image ? `<img src="${r.image}" alt="${r.album}" onerror="this.parentElement.innerHTML='<div class=\\'no-image\\'>🎵</div>'">` : '<div class="no-image">🎵</div>'}
+                    <div class="card-image" onclick="${r.image ? `openLightbox('${r.image}')` : ''}">
+                        ${r.image ? `<img src="${r.image}" alt="${r.album}" onerror="this.parentElement.innerHTML='<div class=\\'no-image\\'>🎵</div>'"><span class="image-hint">Click to enlarge</span>` : '<div class="no-image">🎵</div>'}
                     </div>
                     <div class="card-content">
                         <div class="artist">${r.artist}</div>
@@ -936,6 +1089,11 @@ var records = [
 
         document.getElementById('search').addEventListener('input', (e) => {
             searchTerm = e.target.value.toLowerCase();
+            renderRecords();
+        });
+
+        document.getElementById('yearSearch').addEventListener('input', (e) => {
+            yearFilter = e.target.value;
             renderRecords();
         });
 
