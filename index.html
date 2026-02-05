@@ -3,199 +3,648 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fred's Vinyl Vault - Record Collection Database</title>
+    <title>Fred's Vinyl Vault — Record Collection Database</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #e8e8e8; min-height: 100vh; }
-        .header { background: linear-gradient(90deg, #0f3460 0%, #533483 100%); padding: 20px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
-        .header h1 { font-size: 2.5em; color: #f39c12; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); margin-bottom: 10px; }
-        .header p { color: #bdc3c7; font-size: 1.1em; }
-        .stats-bar { display: flex; justify-content: center; gap: 30px; padding: 15px; background: rgba(0,0,0,0.2); flex-wrap: wrap; }
-        .stat { text-align: center; }
-        .stat-value { font-size: 1.8em; font-weight: bold; color: #e74c3c; }
-        .stat-label { font-size: 0.9em; color: #95a5a6; }
-        .controls { padding: 20px; background: rgba(0,0,0,0.2); display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; align-items: center; }
-        input, select { padding: 12px 15px; border: none; border-radius: 25px; background: #2c3e50; color: #ecf0f1; font-size: 1em; outline: none; transition: all 0.3s; }
-        input:focus, select:focus { box-shadow: 0 0 10px rgba(243, 156, 18, 0.5); }
-        input[type="text"] { width: 300px; }
-        input[type="number"] { width: 100px; text-align: center; }
-        .sort-buttons { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
-        .sort-btn { padding: 10px 20px; border: 2px solid #3498db; border-radius: 25px; background: transparent; color: #3498db; cursor: pointer; transition: all 0.3s; }
-        .sort-btn:hover, .sort-btn.active { background: #3498db; color: #fff; }
-        .container { padding: 20px; max-width: 1600px; margin: 0 auto; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
-        .card { background: linear-gradient(145deg, #1e2a38 0%, #162029 100%); border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3); transition: transform 0.3s, box-shadow 0.3s; }
-        .card:hover { transform: translateY(-5px); box-shadow: 0 15px 40px rgba(0,0,0,0.4); }
-        .card-image { height: 350px; background: #2c3e50; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; position: relative; }
-        .card-image img { width: 100%; height: 100%; object-fit: contain; background: #1a1a2e; }
-        .card-image:hover img { object-fit: cover; }
-        .image-hint { position: absolute; bottom: 5px; right: 5px; background: rgba(0,0,0,0.6); color: #fff; padding: 3px 8px; border-radius: 10px; font-size: 0.7em; opacity: 0; transition: opacity 0.3s; }
-        .card-image:hover .image-hint { opacity: 1; }
-        .no-image { color: #7f8c8d; font-size: 3em; }
-        .card-content { padding: 20px; }
-        .artist { font-size: 1.3em; font-weight: bold; color: #f39c12; margin-bottom: 5px; }
-        .album { font-size: 1.1em; color: #ecf0f1; margin-bottom: 10px; }
-        .details { font-size: 0.9em; color: #95a5a6; margin-bottom: 15px; }
-        .details span { display: block; margin: 3px 0; }
-        .fact { font-style: italic; color: #bdc3c7; font-size: 0.85em; border-left: 3px solid #e74c3c; padding-left: 10px; margin: 10px 0; }
-        .values { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; padding-top: 15px; border-top: 1px solid #34495e; }
-        .value-item { text-align: center; }
-        .value-year { font-size: 0.75em; color: #7f8c8d; }
-        .value-price { font-size: 1em; color: #2ecc71; font-weight: bold; }
-        .no-results { text-align: center; padding: 50px; color: #7f8c8d; font-size: 1.2em; }
-        
-        /* Collection Info Section */
-        .collection-info { background: linear-gradient(145deg, #1e2a38 0%, #162029 100%); margin: 20px auto; max-width: 1600px; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        .info-header { background: linear-gradient(90deg, #e74c3c 0%, #c0392b 100%); padding: 15px 25px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .info-header h2 { color: #fff; font-size: 1.4em; }
-        .info-toggle { color: #fff; font-size: 1.5em; transition: transform 0.3s; }
-        .info-toggle.open { transform: rotate(180deg); }
-        .info-content { padding: 0; max-height: 0; overflow: hidden; transition: max-height 0.5s ease, padding 0.5s ease; }
-        .info-content.open { padding: 25px; max-height: 2000px; }
-        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; }
-        .info-section { background: rgba(0,0,0,0.2); border-radius: 10px; padding: 20px; }
-        .info-section h3 { color: #f39c12; margin-bottom: 15px; font-size: 1.2em; border-bottom: 2px solid #f39c12; padding-bottom: 8px; }
-        .info-section ul { list-style: none; }
-        .info-section li { padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1); color: #bdc3c7; }
-        .info-section li:last-child { border-bottom: none; }
-        .highlight { color: #2ecc71; font-weight: bold; }
-        .info-section p { color: #bdc3c7; line-height: 1.6; }
-        .artist-badge { display: inline-block; background: #3498db; color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 0.85em; margin-right: 5px; }
-        .value-badge { background: #27ae60; }
-        
-        /* Lightbox for full image */
-        .lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; justify-content: center; align-items: center; cursor: zoom-out; }
-        .lightbox.active { display: flex; }
-        .lightbox img { max-width: 90%; max-height: 90%; object-fit: contain; border-radius: 10px; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
-        .lightbox-close { position: absolute; top: 20px; right: 30px; color: #fff; font-size: 2em; cursor: pointer; }
-        
-        @media (max-width: 768px) { .header h1 { font-size: 1.8em; } input[type="text"] { width: 100%; } .grid { grid-template-columns: 1fr; } .info-grid { grid-template-columns: 1fr; } }
+        :root {
+            --bg-deep: #0a0a0c;
+            --bg-primary: #111114;
+            --bg-card: #18181c;
+            --bg-elevated: #222228;
+            --bg-hover: #2a2a32;
+            --gold: #c9a84c;
+            --gold-dim: #8a6d2b;
+            --gold-glow: rgba(201,168,76,0.12);
+            --red: #bf4b53;
+            --green: #4aad78;
+            --blue: #5889cc;
+            --purple: #8b6cc7;
+            --orange: #cc8844;
+            --text-1: #e8e5ec;
+            --text-2: #9d97a6;
+            --text-3: #5f5a68;
+            --border-1: #2a2730;
+            --border-2: #1e1c24;
+            --radius: 8px;
+            --radius-lg: 14px;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-deep);
+            color: var(--text-1);
+            min-height: 100vh;
+            line-height: 1.55;
+        }
+
+        /* ═══ HEADER ═══ */
+        .header {
+            position: relative;
+            padding: 44px 24px 28px;
+            text-align: center;
+            background: linear-gradient(180deg, #14121a 0%, var(--bg-deep) 100%);
+            border-bottom: 1px solid var(--border-2);
+        }
+        .header::before {
+            content: '';
+            position: absolute; inset: 0;
+            background:
+                radial-gradient(ellipse at 25% 30%, rgba(201,168,76,0.05) 0%, transparent 55%),
+                radial-gradient(ellipse at 75% 70%, rgba(139,108,199,0.03) 0%, transparent 55%);
+            pointer-events: none;
+        }
+        .header-inner { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; }
+        .header h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 700;
+            font-size: clamp(2.2rem, 5vw, 3.4rem);
+            color: var(--gold);
+            letter-spacing: 0.01em;
+            margin-bottom: 4px;
+        }
+        .header-sub {
+            color: var(--text-3);
+            font-size: 0.85rem;
+            font-weight: 400;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-bottom: 26px;
+        }
+        .stats-bar { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+        .stat {
+            background: var(--bg-card);
+            border: 1px solid var(--border-1);
+            border-radius: var(--radius);
+            padding: 12px 20px;
+            text-align: center;
+            min-width: 120px;
+            transition: border-color 0.25s;
+        }
+        .stat:hover { border-color: var(--gold-dim); }
+        .stat-val {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.4rem;
+            font-weight: 500;
+            color: var(--gold);
+            line-height: 1.2;
+        }
+        .stat-lbl {
+            font-size: 0.68rem;
+            color: var(--text-3);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-top: 3px;
+        }
+        .stat-note {
+            font-size: 0.65rem;
+            color: var(--text-3);
+            opacity: 0.7;
+            margin-top: 1px;
+        }
+
+        /* ═══ TABS ═══ */
+        .tab-bar {
+            display: flex;
+            justify-content: center;
+            gap: 3px;
+            padding: 14px 16px 0;
+            max-width: 1460px;
+            margin: 0 auto;
+        }
+        .tab-btn {
+            padding: 9px 20px;
+            border: 1px solid transparent;
+            border-bottom: none;
+            border-radius: var(--radius) var(--radius) 0 0;
+            background: var(--bg-card);
+            color: var(--text-3);
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tab-btn:hover { color: var(--text-2); background: var(--bg-elevated); }
+        .tab-btn.active { color: var(--gold); background: var(--bg-primary); border-color: var(--border-1); }
+        .tab-panel {
+            display: none;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-1);
+            border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+            max-width: 1460px;
+            margin: 0 auto 40px;
+            padding: 22px;
+        }
+        .tab-panel.active { display: block; }
+
+        /* ═══ CONTROLS ═══ */
+        .controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 6px; }
+        .search-wrap { position: relative; flex: 1; min-width: 200px; max-width: 380px; }
+        .search-wrap .ico {
+            position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+            color: var(--text-3); width: 15px; height: 15px; pointer-events: none;
+        }
+        input, select {
+            padding: 9px 12px;
+            border: 1px solid var(--border-1);
+            border-radius: var(--radius);
+            background: var(--bg-card);
+            color: var(--text-1);
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.85rem;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        input:focus, select:focus { border-color: var(--gold-dim); box-shadow: 0 0 0 3px var(--gold-glow); }
+        .search-input { width: 100%; padding-left: 34px; }
+        .year-input { width: 82px; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; }
+        select { cursor: pointer; }
+
+        .ctrl-group { display: flex; gap: 5px; align-items: center; }
+        .ctrl-lbl { font-size: 0.68rem; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap; }
+
+        .btn-grp { display: flex; gap: 1px; }
+        .btn {
+            padding: 7px 14px;
+            border: 1px solid var(--border-1);
+            background: var(--bg-card);
+            color: var(--text-3);
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+            line-height: 1.3;
+        }
+        .btn:first-child { border-radius: var(--radius) 0 0 var(--radius); }
+        .btn:last-child { border-radius: 0 var(--radius) var(--radius) 0; }
+        .btn:only-child { border-radius: var(--radius); }
+        .btn:hover { color: var(--text-2); background: var(--bg-elevated); }
+        .btn.active { color: var(--gold); border-color: var(--gold-dim); background: var(--gold-glow); }
+
+        .act-btn {
+            padding: 7px 14px;
+            border: 1px solid var(--border-1);
+            border-radius: var(--radius);
+            background: var(--bg-card);
+            color: var(--text-2);
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: inline-flex; align-items: center; gap: 5px;
+            white-space: nowrap;
+        }
+        .act-btn:hover { border-color: var(--gold-dim); color: var(--gold); }
+
+        .results-ct {
+            font-size: 0.8rem; color: var(--text-3);
+            margin-left: auto;
+            font-family: 'JetBrains Mono', monospace;
+            white-space: nowrap;
+        }
+
+        /* ═══ ACTIVE FILTERS ═══ */
+        .filter-chips {
+            display: flex; gap: 6px; flex-wrap: wrap;
+            margin-bottom: 16px;
+            min-height: 0;
+        }
+        .filter-chips:empty { display: none; }
+        .chip {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 4px 10px 4px 12px;
+            background: var(--gold-glow);
+            border: 1px solid var(--gold-dim);
+            border-radius: 20px;
+            font-size: 0.78rem;
+            color: var(--gold);
+            animation: chipIn 0.2s ease;
+        }
+        @keyframes chipIn { from { opacity: 0; transform: scale(0.9); } }
+        .chip-x {
+            background: none; border: none;
+            color: var(--gold-dim); font-size: 1rem;
+            cursor: pointer; line-height: 1;
+            padding: 0 2px;
+            transition: color 0.15s;
+        }
+        .chip-x:hover { color: var(--red); }
+        .chip-clear {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 4px 10px;
+            background: transparent;
+            border: 1px solid var(--border-1);
+            border-radius: 20px;
+            font-size: 0.78rem;
+            color: var(--text-3);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .chip-clear:hover { border-color: var(--red); color: var(--red); }
+
+        /* ═══ GRID ═══ */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+            gap: 14px;
+        }
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-2);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            transition: transform 0.22s, border-color 0.22s, box-shadow 0.22s;
+            opacity: 0;
+            animation: fadeUp 0.35s ease forwards;
+        }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .card:hover { transform: translateY(-3px); border-color: var(--border-1); box-shadow: 0 10px 35px rgba(0,0,0,0.3); }
+        .card-img {
+            height: 280px;
+            background: var(--bg-deep);
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden; cursor: pointer; position: relative;
+        }
+        .card-img img { width: 100%; height: 100%; object-fit: contain; transition: transform 0.35s; }
+        .card:hover .card-img img { transform: scale(1.03); }
+        .no-img { color: var(--text-3); font-size: 2.2rem; opacity: 0.35; }
+        .card-body { padding: 16px; }
+        .card-artist {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.15rem; font-weight: 700;
+            color: var(--gold); line-height: 1.25; margin-bottom: 2px;
+        }
+        .card-album { font-size: 0.92rem; color: var(--text-1); margin-bottom: 8px; }
+        .card-meta {
+            display: flex; gap: 10px; flex-wrap: wrap;
+            font-size: 0.78rem; color: var(--text-3); margin-bottom: 8px;
+        }
+        .card-meta span { display: flex; align-items: center; gap: 3px; }
+        .card-fact {
+            font-size: 0.8rem; color: var(--text-2); font-style: italic;
+            border-left: 2px solid var(--gold-dim);
+            padding-left: 10px; margin: 8px 0; line-height: 1.5;
+        }
+        .card-vals {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
+            margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-2);
+        }
+        .cv-item { text-align: center; }
+        .cv-yr { font-size: 0.65rem; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; }
+        .cv-pr { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; color: var(--green); font-weight: 500; }
+        mark { background: rgba(201,168,76,0.25); color: var(--text-1); border-radius: 2px; padding: 0 1px; }
+
+        /* ═══ TABLE ═══ */
+        .tbl-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border-2); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        thead th {
+            position: sticky; top: 0; z-index: 2;
+            background: var(--bg-elevated);
+            color: var(--text-3); font-weight: 600;
+            font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.07em;
+            padding: 10px 12px; text-align: left;
+            border-bottom: 2px solid var(--border-1);
+            white-space: nowrap; cursor: pointer; user-select: none;
+            transition: color 0.15s;
+        }
+        thead th:hover { color: var(--gold); }
+        thead th.sorted { color: var(--gold); }
+        thead th .arr { font-size: 0.6rem; margin-left: 3px; opacity: 0.5; }
+        thead th.sorted .arr { opacity: 1; }
+        tbody tr { border-bottom: 1px solid var(--border-2); transition: background 0.12s; }
+        tbody tr:hover { background: var(--bg-elevated); }
+        td { padding: 9px 12px; }
+        .tc-num { color: var(--text-3); font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; width: 40px; text-align: center; }
+        .tc-artist { color: var(--gold); font-weight: 600; font-family: 'Cormorant Garamond', serif; font-size: 0.92rem; }
+        .tc-val { font-family: 'JetBrains Mono', monospace; color: var(--green); font-size: 0.82rem; }
+        .tc-year { font-family: 'JetBrains Mono', monospace; color: var(--text-2); font-size: 0.82rem; }
+        .tc-dim { color: var(--text-3); font-size: 0.8rem; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .tc-fact { color: var(--text-3); font-size: 0.78rem; font-style: italic; max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .tc-fact:hover { white-space: normal; overflow: visible; }
+
+        /* ═══ PAGINATION ═══ */
+        .pager { display: flex; justify-content: center; align-items: center; gap: 5px; margin-top: 22px; flex-wrap: wrap; }
+        .pg-btn {
+            padding: 7px 12px; border: 1px solid var(--border-1); border-radius: var(--radius);
+            background: var(--bg-card); color: var(--text-3);
+            font-family: 'JetBrains Mono', monospace; font-size: 0.78rem;
+            cursor: pointer; transition: all 0.15s;
+        }
+        .pg-btn:hover:not(:disabled) { border-color: var(--gold-dim); color: var(--text-1); }
+        .pg-btn.active { background: var(--gold); color: var(--bg-deep); border-color: var(--gold); font-weight: 600; }
+        .pg-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+        .pg-info { font-size: 0.78rem; color: var(--text-3); padding: 0 6px; }
+        .pp-select { font-size: 0.78rem; padding: 5px 6px; }
+
+        /* ═══ ANALYTICS ═══ */
+        .a-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 18px; }
+        .a-card {
+            background: var(--bg-card); border: 1px solid var(--border-2);
+            border-radius: var(--radius-lg); padding: 22px;
+        }
+        .a-card h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem; color: var(--text-1); margin-bottom: 16px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .bars { display: flex; flex-direction: column; gap: 7px; }
+        .bar-r { display: flex; align-items: center; gap: 8px; }
+        .bar-l { width: 65px; font-size: 0.8rem; color: var(--text-2); text-align: right; font-family: 'JetBrains Mono', monospace; flex-shrink: 0; }
+        .bar-t { flex: 1; height: 26px; background: var(--bg-deep); border-radius: 4px; overflow: hidden; }
+        .bar-f {
+            height: 100%; border-radius: 4px;
+            display: flex; align-items: center; padding: 0 8px;
+            font-size: 0.72rem; font-weight: 600; color: var(--bg-deep);
+            min-width: fit-content;
+        }
+        .bar-v { font-size: 0.75rem; color: var(--text-3); flex-shrink: 0; width: 38px; text-align: right; font-family: 'JetBrains Mono', monospace; }
+
+        .tl { display: flex; flex-direction: column; gap: 5px; }
+        .tl-i {
+            display: flex; align-items: center; gap: 10px;
+            padding: 7px 10px; background: var(--bg-deep);
+            border-radius: var(--radius); transition: background 0.12s; cursor: default;
+        }
+        .tl-i.clickable { cursor: pointer; }
+        .tl-i:hover { background: var(--bg-elevated); }
+        .tl-r { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--text-3); width: 22px; text-align: center; flex-shrink: 0; }
+        .tl-r.gld { color: var(--gold); font-weight: 700; }
+        .tl-info { flex: 1; min-width: 0; }
+        .tl-name { font-size: 0.85rem; color: var(--text-1); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .tl-sub { font-size: 0.72rem; color: var(--text-3); }
+        .tl-val { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; color: var(--green); font-weight: 500; flex-shrink: 0; }
+        .tl-val.cnt { color: var(--blue); }
+
+        /* ═══ INFO ═══ */
+        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+        .info-s {
+            background: var(--bg-card); border: 1px solid var(--border-2);
+            border-radius: var(--radius-lg); padding: 22px;
+        }
+        .info-s h3 {
+            font-family: 'Cormorant Garamond', serif; font-size: 1.05rem;
+            color: var(--gold); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border-1);
+        }
+        .info-s ul { list-style: none; }
+        .info-s li { padding: 6px 0; border-bottom: 1px solid var(--border-2); color: var(--text-2); font-size: 0.88rem; line-height: 1.5; }
+        .info-s li:last-child { border-bottom: none; }
+        .hl { color: var(--green); font-weight: 600; }
+        .info-s p { color: var(--text-2); line-height: 1.65; font-size: 0.88rem; }
+        .a-badge { display: inline-block; background: var(--blue); color: #fff; padding: 1px 7px; border-radius: 10px; font-size: 0.78rem; font-weight: 500; margin-right: 3px; }
+        .v-badge { background: var(--green); }
+
+        /* ═══ LIGHTBOX ═══ */
+        .lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.93); z-index: 1000; justify-content: center; align-items: center; cursor: zoom-out; backdrop-filter: blur(8px); }
+        .lightbox.on { display: flex; }
+        .lightbox img { max-width: 92%; max-height: 92%; object-fit: contain; border-radius: var(--radius); }
+        .lb-close { position: absolute; top: 16px; right: 20px; color: var(--text-3); font-size: 2rem; cursor: pointer; line-height: 1; transition: color 0.15s; }
+        .lb-close:hover { color: var(--text-1); }
+
+        /* ═══ MODAL ═══ */
+        .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 999; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        .modal-bg.on { display: flex; }
+        .modal {
+            background: var(--bg-card); border: 1px solid var(--border-1); border-radius: var(--radius-lg);
+            padding: 28px; max-width: 460px; width: 90%; text-align: center; position: relative;
+        }
+        .modal-x { position: absolute; top: 10px; right: 14px; background: none; border: none; color: var(--text-3); font-size: 1.2rem; cursor: pointer; }
+        .modal h2 { font-family: 'Cormorant Garamond', serif; color: var(--gold); margin-bottom: 18px; font-size: 1.35rem; }
+        .rnd-img { width: 230px; height: 230px; margin: 0 auto 14px; background: var(--bg-deep); border-radius: var(--radius); overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .rnd-img img { width: 100%; height: 100%; object-fit: contain; }
+        .rnd-artist { font-family: 'Cormorant Garamond', serif; font-size: 1.25rem; color: var(--gold); margin-bottom: 3px; }
+        .rnd-album { font-size: 0.95rem; color: var(--text-1); margin-bottom: 5px; }
+        .rnd-detail { font-size: 0.82rem; color: var(--text-3); }
+        .rnd-fact { font-size: 0.82rem; color: var(--text-2); font-style: italic; margin: 10px 0; padding: 10px; background: var(--bg-deep); border-radius: var(--radius); text-align: left; }
+        .rnd-val { font-family: 'JetBrains Mono', monospace; color: var(--green); font-size: 1rem; font-weight: 600; }
+        .spin-btn {
+            margin-top: 14px; padding: 9px 24px; border: none; border-radius: var(--radius);
+            background: var(--gold); color: var(--bg-deep);
+            font-family: 'Outfit', sans-serif; font-size: 0.88rem; font-weight: 600;
+            cursor: pointer; transition: background 0.2s;
+        }
+        .spin-btn:hover { background: var(--gold-dim); }
+        .rnd-scope { font-size: 0.72rem; color: var(--text-3); margin-top: 8px; }
+
+        /* ═══ MISC ═══ */
+        .btt {
+            position: fixed; bottom: 20px; right: 20px;
+            width: 40px; height: 40px; border-radius: 50%;
+            border: 1px solid var(--border-1); background: var(--bg-card); color: var(--text-3);
+            font-size: 1.1rem; cursor: pointer;
+            opacity: 0; transform: translateY(8px); transition: all 0.25s;
+            z-index: 90; display: flex; align-items: center; justify-content: center;
+        }
+        .btt.vis { opacity: 1; transform: translateY(0); }
+        .btt:hover { border-color: var(--gold-dim); color: var(--gold); }
+        .kbd { display: inline-block; padding: 1px 5px; background: var(--bg-elevated); border: 1px solid var(--border-1); border-radius: 3px; font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--text-3); margin-left: 6px; vertical-align: middle; }
+        .hidden { display: none !important; }
+        .no-res { text-align: center; padding: 50px 20px; color: var(--text-3); }
+        .no-res-ico { font-size: 2.5rem; margin-bottom: 10px; opacity: 0.35; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 7px; height: 7px; }
+        ::-webkit-scrollbar-track { background: var(--bg-deep); }
+        ::-webkit-scrollbar-thumb { background: var(--border-1); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-3); }
+
+        @media (max-width: 768px) {
+            .header { padding: 28px 14px 20px; }
+            .stat { padding: 8px 14px; min-width: 95px; }
+            .stat-val { font-size: 1.15rem; }
+            .tab-bar { padding: 10px 10px 0; }
+            .tab-btn { padding: 7px 12px; font-size: 0.78rem; }
+            .tab-panel { padding: 14px; }
+            .search-wrap { max-width: 100%; }
+            .grid { grid-template-columns: 1fr; }
+            .card-img { height: 240px; }
+            .a-grid, .info-grid { grid-template-columns: 1fr; }
+            .results-ct { margin-left: 0; width: 100%; text-align: center; }
+            .controls { justify-content: center; }
+        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>🎵 Fred's Vinyl Vault 🎵</h1>
-        <p>A Comprehensive Database of Classic Vinyl Records</p>
+
+<div class="header">
+    <div class="header-inner">
+        <h1>🎵 Fred's Vinyl Vault</h1>
+        <div class="header-sub">A Comprehensive Database of Classic Vinyl Records</div>
         <div class="stats-bar">
-            <div class="stat"><div class="stat-value" id="totalRecords">0</div><div class="stat-label">Total Records</div></div>
-            <div class="stat"><div class="stat-value" id="totalArtists">0</div><div class="stat-label">Artists</div></div>
-            <div class="stat"><div class="stat-value" id="totalValue">$0</div><div class="stat-label">Est. Collection Value</div></div>
-            <div class="stat"><div class="stat-value" id="yearRange">-</div><div class="stat-label">Year Range</div></div>
+            <div class="stat"><div class="stat-val" id="stTotal">0</div><div class="stat-lbl">Records</div><div class="stat-note" id="stTotalNote"></div></div>
+            <div class="stat"><div class="stat-val" id="stArtists">0</div><div class="stat-lbl">Artists</div></div>
+            <div class="stat"><div class="stat-val" id="stValue">$0</div><div class="stat-lbl">Est. Value</div></div>
+            <div class="stat"><div class="stat-val" id="stAvg">$0</div><div class="stat-lbl">Avg / Record</div></div>
+            <div class="stat"><div class="stat-val" id="stYears">—</div><div class="stat-lbl">Year Span</div></div>
         </div>
     </div>
-    
-    <!-- Collection Info Section -->
-    <div class="collection-info">
-        <div class="info-header" onclick="toggleInfo()">
-            <h2>📚 About This Collection</h2>
-            <span class="info-toggle" id="infoToggle">▼</span>
+</div>
+
+<div class="tab-bar">
+    <button class="tab-btn active" data-tab="browse" onclick="switchTab('browse')">Browse Collection</button>
+    <button class="tab-btn" data-tab="analytics" onclick="switchTab('analytics')">Analytics</button>
+    <button class="tab-btn" data-tab="info" onclick="switchTab('info')">About</button>
+</div>
+
+<!-- ═══ BROWSE ═══ -->
+<div class="tab-panel active" id="tab-browse">
+    <div class="controls" id="controlBar">
+        <div class="search-wrap">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" id="searchBox" class="search-input" placeholder="Search artist, album, label, fact...">
         </div>
-        <div class="info-content" id="infoContent">
-            <div class="info-grid">
-                <div class="info-section">
-                    <h3>🏆 Collection Highlights</h3>
-                    <ul>
-                        <li><span class="highlight">775 vinyl records</span> spanning 1957-2024</li>
-                        <li>Peak era: <span class="highlight">459 albums from the 1970s</span> (60% of collection)</li>
-                        <li>Estimated total value: <span class="highlight">$25,000-$40,000</span></li>
-                        <li>Focus on <span class="highlight">original US pressings</span> from major labels</li>
-                        <li>Includes <span class="highlight">rare bootlegs</span> and promotional items</li>
-                    </ul>
-                </div>
-                
-                <div class="info-section">
-                    <h3>💎 Complete/Near-Complete Discographies</h3>
-                    <ul>
-                        <li><span class="artist-badge">Led Zeppelin</span> Complete studio discography (9 albums)</li>
-                        <li><span class="artist-badge">The Rolling Stones</span> 29 albums including bootlegs - near complete 1964-1986</li>
-                        <li><span class="artist-badge">The Beatles</span> 21 albums - complete US Capitol/Apple releases</li>
-                        <li><span class="artist-badge">The Who</span> 19 albums - complete studio + live catalog</li>
-                        <li><span class="artist-badge">David Bowie</span> 17 albums - complete 1969-1984 era</li>
-                    </ul>
-                </div>
-                
-                <div class="info-section">
-                    <h3>💰 Most Valuable Records</h3>
-                    <ul>
-                        <li>The Who - <em>My Generation</em> (1965) - <span class="highlight value-badge">$160</span></li>
-                        <li>Bob Dylan - <em>Bob Dylan</em> (1962) - <span class="highlight value-badge">$150</span></li>
-                        <li>Atlantic R&B Box Set (14LP) - <span class="highlight value-badge">$137</span></li>
-                        <li>Bob Dylan - <em>Blonde on Blonde</em> - <span class="highlight value-badge">$130</span></li>
-                        <li>Buckingham Nicks (pre-Fleetwood Mac) - <span class="highlight value-badge">$115</span></li>
-                    </ul>
-                </div>
-                
-                <div class="info-section">
-                    <h3>🎸 Notable Artist Runs</h3>
-                    <ul>
-                        <li><span class="artist-badge">Bruce Springsteen</span> 12 albums including rare promo box</li>
-                        <li><span class="artist-badge">Rod Stewart</span> 12 albums - Faces era through solo peak</li>
-                        <li><span class="artist-badge">Bob Dylan</span> 11 albums - complete Columbia 60s catalog</li>
-                        <li><span class="artist-badge">The Kinks</span> 10 albums - British Invasion essentials</li>
-                        <li><span class="artist-badge">Eric Clapton</span> 8 albums - solo + Derek & the Dominos</li>
-                    </ul>
-                </div>
-                
-                <div class="info-section">
-                    <h3>🌟 Themes </h3>
-                    <p>This collection represents a <span class="highlight">carefully curated journey through rock history</span>, with particular strength in:</p>
-                    <ul>
-                        <li><strong>British Invasion:</strong> Beatles, Stones, Who, Kinks, Yardbirds</li>
-                        <li><strong>Progressive Rock:</strong> Yes, ELP, Jethro Tull, King Crimson</li>
-                        <li><strong>Punk/New Wave:</strong> Clash, Police, Pretenders, Elvis Costello</li>
-                        <li><strong>Classic Soul:</strong> Otis Redding, Stevie Wonder, Aretha Franklin</li>
-                        <li><strong>Pete Townshend Archive:</strong> 7 solo albums + 19 Who albums</li>
-                    </ul>
-                </div>
-                
-                <div class="info-section">
-                    <h3>📦 Premium Set Values</h3>
-                    <p>These artist collections command premium prices when sold together:</p>
-                    <ul>
-                        <li>Complete Led Zeppelin (9 LPs): <span class="highlight">$400-600</span></li>
-                        <li>Beatles US Capitol Collection: <span class="highlight">$600-900</span></li>
-                        <li>Rolling Stones 1964-1972: <span class="highlight">$500-800</span></li>
-                        <li>The Who Complete: <span class="highlight">$450-700</span></li>
-                        <li>David Bowie 70s Run: <span class="highlight">$350-500</span></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="controls">
-        <input type="text" id="search" placeholder="🔍 Search artist, album, label...">
-        <input type="number" id="yearSearch" placeholder="Year" min="1950" max="2030">
-        <select id="decadeFilter">
+        <input type="number" id="yearBox" class="year-input" placeholder="Year" min="1950" max="2030">
+        <select id="decadeBox">
             <option value="">All Decades</option>
-            <option value="1950">Before 1960</option>
+            <option value="pre60">Pre-1960s</option>
             <option value="1960">1960s</option>
             <option value="1970">1970s</option>
             <option value="1980">1980s</option>
-            <option value="1990">After 1990</option>
+            <option value="post90">1990s+</option>
         </select>
-        <div class="sort-buttons">
-            <button class="sort-btn active" data-sort="artist">Artist A-Z</button>
-            <button class="sort-btn" data-sort="year">Year</button>
-            <button class="sort-btn" data-sort="value">Value</button>
-            <button class="sort-btn" data-sort="album">Album A-Z</button>
+        <select id="artistBox"><option value="">All Artists</option></select>
+        <select id="pressingBox">
+            <option value="">All Pressings</option>
+            <option value="original">Original US</option>
+            <option value="reissue">Reissue</option>
+            <option value="compilation">Compilation</option>
+            <option value="other">Other</option>
+        </select>
+        <div class="ctrl-group">
+            <span class="ctrl-lbl">Sort</span>
+            <div class="btn-grp" id="sortBtns">
+                <button class="btn active" data-sort="artist">Artist</button>
+                <button class="btn" data-sort="year">Year</button>
+                <button class="btn" data-sort="value">Value</button>
+                <button class="btn" data-sort="album">Album</button>
+            </div>
+            <button class="btn" id="sortDirBtn" onclick="toggleSortDir()" title="Toggle sort direction" style="border-radius:var(--radius);margin-left:2px">↑</button>
+        </div>
+        <div class="ctrl-group">
+            <span class="ctrl-lbl">View</span>
+            <div class="btn-grp">
+                <button class="btn active" id="vGrid" onclick="setView('grid')">Grid</button>
+                <button class="btn" id="vTable" onclick="setView('table')">Table</button>
+            </div>
+        </div>
+        <div class="ctrl-group">
+            <span class="ctrl-lbl">Per page</span>
+            <select id="ppSelect" class="pp-select">
+                <option value="24">24</option>
+                <option value="48" selected>48</option>
+                <option value="96">96</option>
+                <option value="0">All</option>
+            </select>
+        </div>
+        <button class="act-btn" onclick="openRandom()">🎲 Random</button>
+        <button class="act-btn" onclick="exportCSV()">📥 CSV</button>
+        <div class="results-ct" id="resultsCt"></div>
+    </div>
+    <div class="filter-chips" id="filterChips"></div>
+
+    <div id="gridView"><div class="grid" id="recordGrid"></div></div>
+    <div id="tableView" class="hidden">
+        <div class="tbl-wrap">
+            <table>
+                <thead><tr id="tHead"></tr></thead>
+                <tbody id="tBody"></tbody>
+            </table>
         </div>
     </div>
-    <div class="container">
-        <div class="grid" id="recordGrid"></div>
-        <div class="no-results" id="noResults" style="display:none;">No records found matching your search.</div>
+    <div class="pager" id="pager"></div>
+</div>
+
+<!-- ═══ ANALYTICS ═══ -->
+<div class="tab-panel" id="tab-analytics"><div class="a-grid" id="aGrid"></div></div>
+
+<!-- ═══ INFO ═══ -->
+<div class="tab-panel" id="tab-info">
+    <div class="info-grid">
+        <div class="info-s"><h3>🏆 Collection Highlights</h3><ul>
+            <li><span class="hl">775 vinyl records</span> spanning 1957–2024</li>
+            <li>Peak era: <span class="hl">459 albums from the 1970s</span> (60% of collection)</li>
+            <li>Estimated total value: <span class="hl">$25,000–$40,000</span></li>
+            <li>Focus on <span class="hl">original US pressings</span> from major labels</li>
+            <li>Includes <span class="hl">rare bootlegs</span> and promotional items</li>
+        </ul></div>
+        <div class="info-s"><h3>💎 Complete/Near-Complete Discographies</h3><ul>
+            <li><span class="a-badge">Led Zeppelin</span> Complete studio discography (9 albums)</li>
+            <li><span class="a-badge">The Rolling Stones</span> 29 albums including bootlegs — near complete 1964–1986</li>
+            <li><span class="a-badge">The Beatles</span> 21 albums — complete US Capitol/Apple releases</li>
+            <li><span class="a-badge">The Who</span> 19 albums — complete studio + live catalog</li>
+            <li><span class="a-badge">David Bowie</span> 17 albums — complete 1969–1984 era</li>
+        </ul></div>
+        <div class="info-s"><h3>💰 Most Valuable Records</h3><ul>
+            <li>The Who — <em>My Generation</em> (1965) — <span class="hl v-badge">$160</span></li>
+            <li>Bob Dylan — <em>Bob Dylan</em> (1962) — <span class="hl v-badge">$150</span></li>
+            <li>Atlantic R&B Box Set (14LP) — <span class="hl v-badge">$137</span></li>
+            <li>Bob Dylan — <em>Blonde on Blonde</em> — <span class="hl v-badge">$130</span></li>
+            <li>Buckingham Nicks (pre-Fleetwood Mac) — <span class="hl v-badge">$115</span></li>
+        </ul></div>
+        <div class="info-s"><h3>🎸 Notable Artist Runs</h3><ul>
+            <li><span class="a-badge">Bruce Springsteen</span> 12 albums including rare promo box</li>
+            <li><span class="a-badge">Rod Stewart</span> 12 albums — Faces era through solo peak</li>
+            <li><span class="a-badge">Bob Dylan</span> 11 albums — complete Columbia 60s catalog</li>
+            <li><span class="a-badge">The Kinks</span> 10 albums — British Invasion essentials</li>
+            <li><span class="a-badge">Eric Clapton</span> 8 albums — solo + Derek & the Dominos</li>
+        </ul></div>
+        <div class="info-s"><h3>🌟 Themes</h3>
+            <p>This collection represents a <span class="hl">carefully curated journey through rock history</span>, with particular strength in:</p>
+            <ul>
+                <li><strong>British Invasion:</strong> Beatles, Stones, Who, Kinks, Yardbirds</li>
+                <li><strong>Progressive Rock:</strong> Yes, ELP, Jethro Tull, King Crimson</li>
+                <li><strong>Punk/New Wave:</strong> Clash, Police, Pretenders, Elvis Costello</li>
+                <li><strong>Classic Soul:</strong> Otis Redding, Stevie Wonder, Aretha Franklin</li>
+                <li><strong>Pete Townshend Archive:</strong> 7 solo albums + 19 Who albums</li>
+            </ul>
+        </div>
+        <div class="info-s"><h3>📦 Premium Set Values</h3>
+            <p>These artist collections command premium prices when sold together:</p>
+            <ul>
+                <li>Complete Led Zeppelin (9 LPs): <span class="hl">$400–600</span></li>
+                <li>Beatles US Capitol Collection: <span class="hl">$600–900</span></li>
+                <li>Rolling Stones 1964–1972: <span class="hl">$500–800</span></li>
+                <li>The Who Complete: <span class="hl">$450–700</span></li>
+                <li>David Bowie 70s Run: <span class="hl">$350–500</span></li>
+            </ul>
+        </div>
     </div>
-    
-    <!-- Lightbox for full-size images -->
-    <div class="lightbox" id="lightbox" onclick="closeLightbox()">
-        <span class="lightbox-close">&times;</span>
-        <img id="lightboxImg" src="" alt="Full size album cover">
+</div>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <span class="lb-close">&times;</span>
+    <img id="lbImg" src="" alt="Full size album cover">
+</div>
+
+<div class="modal-bg" id="rndModal">
+    <div class="modal" onclick="event.stopPropagation()">
+        <button class="modal-x" onclick="closeRandom()">&times;</button>
+        <h2>🎲 Random Pick</h2>
+        <div class="rnd-img" id="rndImg"></div>
+        <div class="rnd-artist" id="rndArtist"></div>
+        <div class="rnd-album" id="rndAlbum"></div>
+        <div class="rnd-detail" id="rndDetail"></div>
+        <div class="rnd-fact" id="rndFact"></div>
+        <div class="rnd-val" id="rndVal"></div>
+        <button class="spin-btn" onclick="spinRandom()">Spin Again</button>
+        <div class="rnd-scope" id="rndScope"></div>
     </div>
-    <script>
+</div>
+
+<button class="btt" id="btt" onclick="window.scrollTo({top:0})">↑</button>
+
+<script>
+// Record Collection Database - Fred's Vinyl Vault
+// Total Records: 775
+
 var records = [
     { artist: "ABBA", album: "Greatest Hits", year: 1976, label: "Atlantic (SD 18189)", pressing: "Original US pressing", chartPosition: "#48 Billboard 200", interestingFact: "SOS, Waterloo, Mamma Mia, Fernando. First US hits compilation. Park bench cover.", value1980: "$5-8", value2000: "$12-20", value2025: "$22-38", value2025Num: 30, image: "images/PXL_20260112_184459989.MP~2.jpg" },
-    { artist: "AC/DC", album: "Back in Black", year: 1980, label: "Atlantic (SD 16018)", pressing: "Original US pressing", chartPosition: "#4 Billboard 200", interestingFact: "Second best-selling album ever. Brian Johnson debut. Tribute to Bon Scott. Embossed black cover.", value1980: "$6-10", value2000: "$20-35", value2025: "$40-65", value2025Num: 52, image: "images/PXL_20260112_184520423.jpg" },
-    { artist: "Ace", album: "Five-A-Side", year: 1974, label: "Anchor (ANCL-2001)", pressing: "Original US pressing", chartPosition: "#11 Billboard 200", interestingFact: "How Long #3 hit. British pub rock. Paul Carrack on vocals. Soccer theme cover.", value1980: "$4-7", value2000: "$10-18", value2025: "$18-32", value2025Num: 25, image: "images/PXL_20260112_184539567.MP.jpg" },
+    { artist: "AC/DC", album: "Back in Black", year: 1980, label: "Atlantic (SD 16018)", pressing: "Original US pressing", chartPosition: "#4 Billboard 200", interestingFact: "Second best-selling album of all time with 50+ million copies sold. Brian Johnson's debut after Bon Scott's death. All-black cover was 'sign of mourning.' Now 27x Platinum in US alone.", value1980: "$6-10", value2000: "$20-35", value2025: "$40-65", value2025Num: 52, image: "images/PXL_20260112_184520423.jpg" },
+    { artist: "Ace", album: "Five-A-Side", year: 1974, label: "Anchor (ANCL-2001)", pressing: "Original US pressing", chartPosition: "#11 Billboard 200", interestingFact: "How Long hit #3 - Phil Collins called it a 'classic single.' Paul Carrack wrote it about bassist secretly working with another band. Carrack later joined Squeeze and Mike + The Mechanics.", value1980: "$4-7", value2000: "$10-18", value2025: "$18-32", value2025Num: 25, image: "images/PXL_20260112_184539567.MP.jpg" },
     { artist: "Adam Ant", album: "Friend or Foe", year: 1982, label: "Epic (FE 38370)", pressing: "Original US pressing", chartPosition: "#16 Billboard 200", interestingFact: "First solo after Ants split. Goody Two Shoes #12. Blurred portrait cover.", value1980: "N/A", value2000: "$10-18", value2025: "$18-32", value2025Num: 25, image: "images/PXL_20260112_184601194.jpg" },
     { artist: "Bryan Adams", album: "Cuts Like a Knife", year: 1983, label: "A&M (SP-4919)", pressing: "Original US pressing", chartPosition: "#8 Billboard 200", interestingFact: "Breakthrough album. Title track, Straight From the Heart hits. Canadian rocker.", value1980: "N/A", value2000: "$8-15", value2025: "$15-28", value2025Num: 21, image: "images/PXL_20260112_184626982.jpg" },
     { artist: "Aerosmith", album: "Get Your Wings", year: 1974, label: "Columbia (PC 32847)", pressing: "Original US pressing", chartPosition: "#74 Billboard 200", interestingFact: "Second studio album featuring Same Old Song and Dance and Train Kept A Rollin'.", value1980: "$6-10", value2000: "$15-25", value2025: "$25-40", value2025Num: 32, image: "images/aerosmith-get-your-wings.jpg" },
@@ -206,7 +655,7 @@ var records = [
     { artist: "Allman Brothers Band", album: "Eat a Peach", year: 1972, label: "Capricorn (2CP 0102)", pressing: "Original US, 2LP", chartPosition: "#4 Billboard 200", interestingFact: "Part studio part live. Last recordings with Duane Allman.", value1980: "$10-15", value2000: "$20-35", value2025: "$35-60", value2025Num: 47, image: "images/allman-brothers-eat-a-peach.jpg" },
     { artist: "Allman Brothers Band", album: "Brothers and Sisters", year: 1973, label: "Capricorn (CP 0111)", pressing: "Original US pressing", chartPosition: "#1 Billboard 200", interestingFact: "First after Duane and Berry Oakley's deaths. Contains Ramblin' Man.", value1980: "$8-12", value2000: "$15-25", value2025: "$25-45", value2025Num: 35, image: "images/allman-brothers-brothers-and-sisters.jpg" },
     { artist: "Duane Allman", album: "An Anthology", year: 1972, label: "Capricorn (2CP 0108)", pressing: "Original US, 2LP", chartPosition: "#25 Billboard 200", interestingFact: "Posthumous compilation. Includes legendary slide work on Layla.", value1980: "$10-15", value2000: "$20-35", value2025: "$35-55", value2025Num: 45, image: "images/duane-allman-anthology.jpg" },
-    { artist: "America", album: "America", year: 1971, label: "Warner Bros (BS 2576)", pressing: "Original US pressing", chartPosition: "#1 Billboard 200", interestingFact: "Debut featuring A Horse with No Name (#1). Formed by Air Force sons in London.", value1980: "$5-8", value2000: "$10-18", value2025: "$15-30", value2025Num: 22, image: "images/america-america.jpg" },
+    { artist: "America", album: "America", year: 1972, label: "Warner Bros (BS 2576)", pressing: "Original US pressing", chartPosition: "#1 Billboard 200", interestingFact: "A Horse with No Name hit #1, knocking Neil Young's Heart of Gold from the top spot. Band formed by sons of US Air Force servicemen stationed in London. Originally released without the hit single.", value1980: "$5-8", value2000: "$10-18", value2025: "$15-30", value2025Num: 22, image: "images/america-america.jpg" },
     { artist: "America", album: "Hearts", year: 1975, label: "Warner Bros (BS 2852)", pressing: "Original US pressing", chartPosition: "#4 Billboard 200", interestingFact: "First produced by George Martin. Contains Sister Golden Hair (#1).", value1980: "$4-7", value2000: "$8-15", value2025: "$12-25", value2025Num: 18, image: "images/america-hearts.jpg" },
     { artist: "Eric Andersen", album: "Be True to You", year: 1975, label: "Arista (AL 4033)", pressing: "Original US pressing", chartPosition: "Did not chart", interestingFact: "Folk singer-songwriter's Arista debut. Part of Greenwich Village scene.", value1980: "$3-5", value2000: "$5-10", value2025: "$8-15", value2025Num: 11, image: "images/eric-andersen-be-true-to-you.jpg" },
     { artist: "The Animals", album: "Best of the Animals", year: 1973, label: "Abkco (AB 4226)", pressing: "Original US pressing", chartPosition: "N/A (compilation)", interestingFact: "15 hits including House of the Rising Sun (#1). British Invasion legends.", value1980: "$5-8", value2000: "$10-18", value2025: "$15-28", value2025Num: 21, image: "images/animals-best-of.jpg" },
@@ -219,7 +668,7 @@ var records = [
     { artist: "Batdorf & Rodney", album: "Life Is You", year: 1975, label: "Arista (AL 4041)", pressing: "Original US pressing", chartPosition: "Did not chart", interestingFact: "Soft rock duo from LA. John Batdorf later wrote for film/TV.", value1980: "$3-5", value2000: "$5-10", value2025: "$8-15", value2025Num: 11, image: "images/batdorf-rodney-life-is-you.jpg" },
     { artist: "The Beach Boys", album: "The Beach Boys", year: 1985, label: "Caribou (FZ 39946)", pressing: "Original US pressing", chartPosition: "#52 Billboard 200", interestingFact: "Features Getcha Back. First album with Brian Wilson's return.", value1980: "N/A", value2000: "$5-10", value2025: "$10-18", value2025Num: 14, image: "images/beach-boys-beach-boys.jpg" },
     { artist: "The Beatles", album: "Live at the Star-Club", year: 1977, label: "Lingasong (LS-2-7001)", pressing: "Original US, 2LP", chartPosition: "#111 Billboard 200", interestingFact: "Raw 1962 Hamburg recordings. Captures pre-fame Beatles energy.", value1980: "$10-15", value2000: "$20-35", value2025: "$30-50", value2025Num: 40, image: "images/beatles-star-club.jpg" },
-    { artist: "The Beatles", album: "Meet the Beatles!", year: 1964, label: "Capitol (ST 2047)", pressing: "Original US stereo", chartPosition: "#1 Billboard 200", interestingFact: "First Capitol album, launched Beatlemania. I Want to Hold Your Hand.", value1980: "$15-25", value2000: "$30-50", value2025: "$50-100", value2025Num: 75, image: "images/beatles-meet-the-beatles.jpg" },
+    { artist: "The Beatles", album: "Meet the Beatles!", year: 1964, label: "Capitol (ST 2047)", pressing: "Original US stereo", chartPosition: "#1 Billboard 200", interestingFact: "First Capitol album that launched Beatlemania in America. Spent 11 weeks at #1. Half-shadow Robert Freeman cover became iconic image of the era.", value1980: "$15-25", value2000: "$30-50", value2025: "$50-100", value2025Num: 75, image: "images/beatles-meet-the-beatles.jpg" },
     { artist: "The Beatles", album: "The Beatles' Second Album", year: 1964, label: "Capitol (ST 2080)", pressing: "Original US stereo", chartPosition: "#1 Billboard 200", interestingFact: "Features She Loves You and Roll Over Beethoven. #1 for 5 weeks.", value1980: "$12-20", value2000: "$25-45", value2025: "$40-80", value2025Num: 60, image: "images/beatles-second-album.jpg" },
     { artist: "The Beatles", album: "Something New", year: 1964, label: "Capitol (ST 2108)", pressing: "Original US stereo", chartPosition: "#2 Billboard 200", interestingFact: "A Hard Day's Night songs plus German versions. And I Love Her.", value1980: "$12-20", value2000: "$25-40", value2025: "$35-70", value2025Num: 52, image: "images/beatles-something-new.jpg" },
     { artist: "The Beatles", album: "A Hard Day's Night", year: 1964, label: "United Artists (UAS 6366)", pressing: "Original US stereo", chartPosition: "#1 Billboard 200", interestingFact: "First film soundtrack. First all Lennon-McCartney album.", value1980: "$15-25", value2000: "$30-50", value2025: "$50-90", value2025Num: 70, image: "images/beatles-hard-days-night.jpg" },
@@ -232,11 +681,11 @@ var records = [
     { artist: "The Beatles", album: "Rubber Soul", year: 1965, label: "Capitol (ST 2442)", pressing: "Original US stereo", chartPosition: "#1 Billboard 200", interestingFact: "Pivotal artistic leap. Different US track listing than UK version.", value1980: "$15-25", value2000: "$30-50", value2025: "$50-90", value2025Num: 70, image: "images/beatles-rubber-soul.jpg" },
     { artist: "The Beatles", album: "Revolver", year: 1966, label: "Capitol (ST 2576)", pressing: "Original US stereo", chartPosition: "#1 Billboard 200", interestingFact: "Klaus Voormann cover art. US version missing 3 UK tracks.", value1980: "$15-25", value2000: "$30-50", value2025: "$50-90", value2025Num: 70, image: "images/beatles-revolver.jpg" },
     { artist: "The Beatles", album: "Yesterday and Today", year: 1966, label: "Capitol (ST 2553)", pressing: "Original US stereo", chartPosition: "#1 Billboard 200", interestingFact: "Infamous butcher cover recalled. Trunk cover shown here is replacement.", value1980: "$15-25", value2000: "$30-50", value2025: "$40-80", value2025Num: 60, image: "images/beatles-yesterday-today.jpg" },
-    { artist: "The Beatles", album: "Sgt. Pepper's Lonely Hearts Club Band", year: 1967, label: "Capitol (SMAS 2653)", pressing: "Original US stereo", chartPosition: "#1 Billboard 200", interestingFact: "Revolutionary concept album. 15 weeks at #1. Grammy Album of Year.", value1980: "$15-25", value2000: "$30-55", value2025: "$50-100", value2025Num: 75, image: "images/beatles-sgt-pepper.jpg" },
+    { artist: "The Beatles", album: "Sgt. Pepper's Lonely Hearts Club Band", year: 1967, label: "Capitol (SMAS 2653)", pressing: "Original US stereo", chartPosition: "#1 Billboard 200", interestingFact: "Revolutionary concept album that changed rock music forever. Peter Blake cover features 70+ celebrity cutouts. Won 4 Grammys including Album of Year.", value1980: "$15-25", value2000: "$30-55", value2025: "$50-100", value2025Num: 75, image: "images/beatles-sgt-pepper.jpg" },
     { artist: "The Beatles", album: "Magical Mystery Tour", year: 1967, label: "Capitol (SMAL 2835)", pressing: "Original US pressing", chartPosition: "#1 Billboard 200", interestingFact: "US converted UK EP to LP. Includes Strawberry Fields and Penny Lane.", value1980: "$12-20", value2000: "$25-45", value2025: "$40-75", value2025Num: 57, image: "images/beatles-magical-mystery.jpg" },
     { artist: "The Beatles", album: "Yellow Submarine", year: 1969, label: "Apple (SW 153)", pressing: "Original US pressing", chartPosition: "#2 Billboard 200", interestingFact: "Animated film soundtrack. Only 4 new Beatles songs; rest is George Martin score.", value1980: "$10-15", value2000: "$20-35", value2025: "$30-55", value2025Num: 42, image: "images/beatles-yellow-submarine.jpg" },
     { artist: "The Beatles", album: "The Beatles (White Album)", year: 1968, label: "Apple (SWBO 101)", pressing: "Original US, 2LP", chartPosition: "#1 Billboard 200", interestingFact: "Double album with embossed cover and serial number. Eclectic masterpiece.", value1980: "$20-30", value2000: "$40-70", value2025: "$70-130", value2025Num: 100, image: "images/beatles-white-album.jpg" },
-    { artist: "The Beatles", album: "Abbey Road", year: 1969, label: "Apple (SO 383)", pressing: "Original US pressing", chartPosition: "#1 Billboard 200", interestingFact: "Iconic crosswalk cover. Last recorded album. Come Together and Something.", value1980: "$15-25", value2000: "$30-55", value2025: "$50-100", value2025Num: 75, image: "images/beatles-abbey-road.jpg" },
+    { artist: "The Beatles", album: "Abbey Road", year: 1969, label: "Apple (SO 383)", pressing: "Original US pressing", chartPosition: "#1 Billboard 200", interestingFact: "Last album recorded together (though Let It Be released after). Iconic Iain Macmillan crosswalk photo shot in 10 minutes. Side two medley is prog-rock precursor.", value1980: "$15-25", value2000: "$30-55", value2025: "$50-100", value2025Num: 75, image: "images/beatles-abbey-road.jpg" },
     { artist: "The Beatles", album: "Hey Jude", year: 1970, label: "Apple (SW 385)", pressing: "Original US pressing", chartPosition: "#2 Billboard 200", interestingFact: "Compilation of non-album singles. Hey Jude was longest #1 at 7:11.", value1980: "$10-15", value2000: "$20-35", value2025: "$30-55", value2025Num: 42, image: "images/beatles-hey-jude.jpg" },
     { artist: "The Beatles", album: "Let It Be", year: 1970, label: "Apple (AR 34001)", pressing: "Original US pressing", chartPosition: "#1 Billboard 200", interestingFact: "Final released album. Phil Spector production controversial.", value1980: "$12-20", value2000: "$25-45", value2025: "$40-75", value2025Num: 57, image: "images/beatles-let-it-be.jpg" },
     { artist: "Jeff Beck", album: "Truth / Beck-Ola", year: 1975, label: "Epic (BG 33779)", pressing: "Original US, 2LP", chartPosition: "N/A (compilation)", interestingFact: "Two-fer of first two Jeff Beck Group albums with Rod Stewart and Ron Wood.", value1980: "$8-12", value2000: "$15-25", value2025: "$20-35", value2025Num: 27, image: "images/jeff-beck-truth-beck-ola.jpg" },
@@ -263,7 +712,7 @@ var records = [
     { artist: "Gary U.S. Bonds", album: "On the Line", year: 1982, label: "EMI (SO-17068)", pressing: "Original US pressing", chartPosition: "#75 Billboard 200", interestingFact: "Second Springsteen-produced album. Out of Work. Continued comeback.", value1980: "$4-7", value2000: "$6-12", value2025: "$10-18", value2025Num: 14, image: "images/gary-us-bonds-on-the-line.jpg" },
     { artist: "Booker T. & The M.G.'s", album: "The Best of Booker T. & The M.G.'s", year: 1968, label: "Atlantic (SD 8202)", pressing: "Original US pressing", chartPosition: "N/A (compilation)", interestingFact: "Stax house band. Green Onions (#3). Backbone of Memphis soul sound.", value1980: "$8-12", value2000: "$15-25", value2025: "$25-40", value2025Num: 32, image: "images/booker-t-best-of.jpg" },
     { artist: "Boston", album: "Boston", year: 1976, label: "Epic (JE 34188)", pressing: "Original US pressing", chartPosition: "#3 Billboard 200", interestingFact: "Best-selling debut ever at the time. More Than a Feeling. 17x platinum.", value1980: "$6-10", value2000: "$12-22", value2025: "$20-38", value2025Num: 29, image: "images/boston-boston.jpg" },
-    { artist: "The Bottom Line", album: "No Strings Attached", year: 1984, label: "Independent", pressing: "Original US pressing", chartPosition: "Did not chart", interestingFact: "Allentown Rock Band.", value1980: "$5-10", value2000: "$8-15", value2025: "$12-25", value2025Num: 18, image: "images/bottom-line-no-strings.jpg" },
+    { artist: "The Bottom Line", album: "No Strings Attached", year: 1984, label: "Independent", pressing: "Original US pressing", chartPosition: "Did not chart", interestingFact: "Allentown Local Band.", value1980: "$5-10", value2000: "$8-15", value2025: "$12-25", value2025Num: 18, image: "images/bottom-line-no-strings.jpg" },
     { artist: "David Bowie", album: "Space Oddity", year: 1972, label: "RCA Victor (LSP-4813)", pressing: "US reissue pressing", chartPosition: "#16 Billboard 200 (reissue)", interestingFact: "Originally released 1969. Title track written for moon landing. Major Tom became recurring character.", value1980: "$8-12", value2000: "$15-25", value2025: "$25-45", value2025Num: 35, image: "images/david-bowie-space-oddity.jpg" },
     { artist: "David Bowie", album: "The Man Who Sold the World", year: 1970, label: "Mercury (SR 61325)", pressing: "US reissue pressing", chartPosition: "#105 Billboard 200", interestingFact: "Hard rock direction with Mick Ronson. Title track later covered by Nirvana on MTV Unplugged.", value1980: "$10-15", value2000: "$20-35", value2025: "$35-60", value2025Num: 47, image: "images/david-bowie-man-who-sold-the-world.jpg" },
     { artist: "David Bowie", album: "Hunky Dory", year: 1971, label: "RCA Victor (LSP-4623)", pressing: "Original US pressing", chartPosition: "#93 Billboard 200", interestingFact: "Features Changes, Life on Mars?, and Queen Bitch. Considered one of rock's greatest albums.", value1980: "$10-15", value2000: "$25-40", value2025: "$40-70", value2025Num: 55, image: "images/david-bowie-hunky-dory.jpg" },
@@ -344,10 +793,10 @@ var records = [
     { artist: "Tom Petty and the Heartbreakers", album: "Pack Up the Plantation: Live!", year: 1985, label: "MCA (MCA2-8021)", pressing: "Original US, 2LP", chartPosition: "#22 Billboard 200", interestingFact: "First official live album. Covers of Needles and Pins, So You Want to Be a Rock 'n' Roll Star.", value1980: "N/A", value2000: "$10-18", value2025: "$15-28", value2025Num: 21, image: "images/tom-petty-pack-up-plantation.jpg" },
     { artist: "Wilson Pickett", album: "Greatest Hits", year: 1973, label: "Atlantic (SD 2-501)", pressing: "Original US, 2LP", chartPosition: "N/A (compilation)", interestingFact: "Wicked Pickett soul legend. In the Midnight Hour, Mustang Sally, Land of 1000 Dances.", value1980: "$8-12", value2000: "$12-20", value2025: "$20-35", value2025Num: 27, image: "images/wilson-pickett-greatest-hits.jpg" },
     { artist: "Pink Floyd", album: "Meddle", year: 1971, label: "Harvest (SMAS-832)", pressing: "Original US pressing", chartPosition: "#70 Billboard 200", interestingFact: "Transitional masterpiece. Echoes fills entire side two. One of These Days. Textured ear photo cover.", value1980: "$10-15", value2000: "$25-40", value2025: "$40-70", value2025Num: 55, image: "images/pink-floyd-meddle.jpg" },
-    { artist: "Pink Floyd", album: "The Dark Side of the Moon", year: 1973, label: "Harvest (SMAS-11163)", pressing: "Original US pressing", chartPosition: "#1 Billboard 200", interestingFact: "One of best-selling albums ever. 937 weeks on Billboard. Money, Time, Us and Them. Hipgnosis prism cover.", value1980: "$10-15", value2000: "$25-45", value2025: "$50-100", value2025Num: 75, image: "images/pink-floyd-dark-side.jpg" },
+    { artist: "Pink Floyd", album: "The Dark Side of the Moon", year: 1973, label: "Harvest (SMAS-11163)", pressing: "Original US pressing", chartPosition: "#1 Billboard 200", interestingFact: "Spent record 937 weeks on Billboard 200. One of best-selling albums ever at 45+ million copies. Storm Thorgerson's prism cover is among most recognizable in music history.", value1980: "$10-15", value2000: "$25-45", value2025: "$50-100", value2025Num: 75, image: "images/pink-floyd-dark-side.jpg" },
     { artist: "Pink Floyd", album: "Wish You Were Here", year: 1975, label: "Columbia (PC 33453)", pressing: "Original US pressing", chartPosition: "#1 Billboard 200", interestingFact: "Tribute to Syd Barrett. Shine On You Crazy Diamond bookends album. Iconic handshake cover by Hipgnosis.", value1980: "$10-15", value2000: "$25-40", value2025: "$45-80", value2025Num: 62, image: "images/pink-floyd-wish-you-were-here.jpg" },
     { artist: "Pink Floyd", album: "Animals", year: 1977, label: "Columbia (JC 34474)", pressing: "Original US pressing", chartPosition: "#3 Billboard 200", interestingFact: "Concept album inspired by Orwell's Animal Farm. Battersea Power Station cover. Dogs, Pigs, Sheep.", value1980: "$10-15", value2000: "$25-40", value2025: "$40-70", value2025Num: 55, image: "images/pink-floyd-animals.jpg" },
-    { artist: "Pink Floyd", album: "The Wall", year: 1979, label: "Columbia (PC2 36183)", pressing: "Original US, 2LP", chartPosition: "#1 Billboard 200", interestingFact: "Rock opera masterpiece. Another Brick in the Wall #1. 23x platinum. Became film. Gerald Scarfe artwork.", value1980: "$12-18", value2000: "$30-50", value2025: "$50-90", value2025Num: 70, image: "images/pink-floyd-the-wall.jpg" },
+    { artist: "Pink Floyd", album: "The Wall", year: 1979, label: "Columbia (PC2 36183)", pressing: "Original US, 2LP", chartPosition: "#1 Billboard 200", interestingFact: "Rock opera about isolation and mental breakdown. Another Brick in the Wall (Part 2) became unlikely #1 disco-era hit. Spawned 1982 film. Gerald Scarfe's animations iconic.", value1980: "$12-18", value2000: "$30-50", value2025: "$50-90", value2025Num: 70, image: "images/pink-floyd-the-wall.jpg" },
     { artist: "Robert Plant", album: "Pictures at Eleven", year: 1982, label: "Swan Song (SS 8512)", pressing: "Original US pressing", chartPosition: "#5 Billboard 200", interestingFact: "Solo debut post-Led Zeppelin. Burning Down One Side. Phil Collins on drums on one track.", value1980: "N/A", value2000: "$8-15", value2025: "$15-28", value2025Num: 21, image: "images/robert-plant-pictures-at-eleven.jpg" },
     { artist: "Robert Plant", album: "The Principle of Moments", year: 1983, label: "Es Paranza (90101-1)", pressing: "Original US pressing", chartPosition: "#8 Billboard 200", interestingFact: "Big Log hit #20. In the Mood. Continued successful solo career away from Zeppelin sound.", value1980: "N/A", value2000: "$8-15", value2025: "$12-25", value2025Num: 18, image: "images/robert-plant-principle-of-moments.jpg" },
     { artist: "The Police", album: "Sting the Girls and Make Them Die", year: 1979, label: "Bootleg", pressing: "Unofficial live recording", chartPosition: "N/A (bootleg)", interestingFact: "Rare bootleg of early Police live performance. Collectors item from their club touring days.", value1980: "$15-25", value2000: "$20-35", value2025: "$25-45", value2025Num: 35, image: "images/police-bootleg.jpg" },
@@ -415,10 +864,10 @@ var records = [
     { artist: "The Rolling Stones", album: "Through the Past, Darkly (Big Hits Vol. 2)", year: 1969, label: "London (NPS-3)", pressing: "Original US pressing", chartPosition: "#2 Billboard 200", interestingFact: "Octagonal cover. Dedicated to Brian Jones who died days before release.", value1980: "$10-18", value2000: "$20-35", value2025: "$35-55", value2025Num: 45, image: "images/PXL_20260112_195237675~2.jpg" },
     { artist: "The Rolling Stones", album: "Let It Bleed", year: 1969, label: "London (NPS-4)", pressing: "Original US stereo", chartPosition: "#3 Billboard 200", interestingFact: "Gimme Shelter, You Can't Always Get What You Want. Last with Brian Jones.", value1980: "$12-20", value2000: "$25-45", value2025: "$45-80", value2025Num: 62, image: "images/PXL_20260112_195247342~2.jpg" },
     { artist: "The Rolling Stones", album: "Get Yer Ya-Ya's Out!", year: 1970, label: "London (NPS-5)", pressing: "Original US pressing", chartPosition: "#6 Billboard 200", interestingFact: "1969 tour live album. Considered one of greatest live rock albums.", value1980: "$10-18", value2000: "$20-35", value2025: "$35-55", value2025Num: 45, image: "images/PXL_20260112_195256747~2.jpg" },
-    { artist: "The Rolling Stones", album: "Sticky Fingers", year: 1971, label: "Rolling Stones Records (COC 59100)", pressing: "Original US pressing", chartPosition: "#1 Billboard 200", interestingFact: "Andy Warhol designed working zipper cover. Brown Sugar, Wild Horses.", value1980: "$12-20", value2000: "$30-55", value2025: "$50-90", value2025Num: 70, image: "images/PXL_20260112_195310042~2.jpg" },
+    { artist: "The Rolling Stones", album: "Sticky Fingers", year: 1971, label: "Rolling Stones Records (COC 59100)", pressing: "Original US pressing", chartPosition: "#1 Billboard 200", interestingFact: "First on their own label with iconic tongue logo. Andy Warhol's working zipper cover is pop art landmark. Contains Brown Sugar (#1), Wild Horses, Can't You Hear Me Knocking.", value1980: "$12-20", value2000: "$30-55", value2025: "$50-90", value2025Num: 70, image: "images/PXL_20260112_195310042~2.jpg" },
     { artist: "The Rolling Stones", album: "Hot Rocks 1964-1971", year: 1971, label: "London (2PS 606/607)", pressing: "Original US, 2LP", chartPosition: "#4 Billboard 200", interestingFact: "Definitive hits collection. Has spent 300+ weeks on charts over decades.", value1980: "$10-15", value2000: "$15-25", value2025: "$25-40", value2025Num: 32, image: "images/PXL_20260112_195319850~2.jpg" },
     { artist: "The Rolling Stones", album: "More Hot Rocks (Big Hits & Fazed Cookies)", year: 1972, label: "London (2PS 626/627)", pressing: "Original US, 2LP", chartPosition: "#9 Billboard 200", interestingFact: "B-sides and deeper cuts. Tell Me, Fortune Teller, I'm Free.", value1980: "$8-14", value2000: "$15-25", value2025: "$25-40", value2025Num: 32, image: "images/PXL_20260112_195331101~2.jpg" },
-    { artist: "The Rolling Stones", album: "Exile on Main St.", year: 1972, label: "Rolling Stones Records (COC 2-2900)", pressing: "Original US, 2LP", chartPosition: "#1 Billboard 200", interestingFact: "Recorded in Keith's French villa. Tumbling Dice. Now considered masterpiece.", value1980: "$12-20", value2000: "$30-55", value2025: "$50-90", value2025Num: 70, image: "images/PXL_20260112_195342498.MP~2.jpg" },
+    { artist: "The Rolling Stones", album: "Exile on Main St.", year: 1972, label: "Rolling Stones Records (COC 2-2900)", pressing: "Original US, 2LP", chartPosition: "#1 Billboard 200", interestingFact: "Recorded in basement of Keith's Villa Nellcôte in France during tax exile. Initially mixed reviews; now widely considered their masterpiece and one of the greatest albums ever made.", value1980: "$12-20", value2000: "$30-55", value2025: "$50-90", value2025Num: 70, image: "images/PXL_20260112_195342498.MP~2.jpg" },
     { artist: "The Rolling Stones", album: "Goats Head Soup", year: 1973, label: "Rolling Stones Records (COC 59101)", pressing: "Original US pressing", chartPosition: "#1 Billboard 200", interestingFact: "Angie was #1 single. Recorded in Jamaica during tax exile.", value1980: "$8-14", value2000: "$18-30", value2025: "$30-50", value2025Num: 40, image: "images/PXL_20260112_195356011~2.jpg" },
     { artist: "The Rolling Stones", album: "It's Only Rock 'n Roll", year: 1974, label: "Rolling Stones Records (COC 79101)", pressing: "Original US pressing", chartPosition: "#1 Billboard 200", interestingFact: "Title track with Ron Wood. Last with Mick Taylor.", value1980: "$8-14", value2000: "$18-30", value2025: "$28-45", value2025Num: 36, image: "images/PXL_20260112_195407526.MP~2.jpg" },
     { artist: "The Rolling Stones", album: "Black and Blue", year: 1976, label: "Rolling Stones Records (COC 79104)", pressing: "Original US pressing", chartPosition: "#1 Billboard 200", interestingFact: "First with Ron Wood. Reggae and funk influences. Fool to Cry.", value1980: "$8-12", value2000: "$15-25", value2025: "$25-40", value2025Num: 32, image: "images/PXL_20260112_195422527~2.jpg" },
@@ -439,7 +888,7 @@ var records = [
     { artist: "Santana", album: "Abraxas", year: 1970, label: "Columbia (KC 30130)", pressing: "Original US pressing", chartPosition: "#1 Billboard 200", interestingFact: "Black Magic Woman and Oye Como Va. Mati Klarwein surrealist cover.", value1980: "$10-15", value2000: "$20-35", value2025: "$35-55", value2025Num: 45, image: "images/PXL_20260112_200648963.jpg" },
     { artist: "Santana", album: "Santana III", year: 1971, label: "Columbia (KC 30595)", pressing: "Original US pressing", chartPosition: "#1 Billboard 200", interestingFact: "Latin-rock peak. No One to Depend On. Added Neal Schon on guitar.", value1980: "$8-12", value2000: "$15-25", value2025: "$25-40", value2025Num: 32, image: "images/PXL_20260112_200658827.jpg" },
     { artist: "Santana", album: "Caravanserai", year: 1972, label: "Columbia (KC 31610)", pressing: "Original US pressing", chartPosition: "#8 Billboard 200", interestingFact: "Jazz fusion transition album. No hit singles but critical acclaim.", value1980: "$8-12", value2000: "$15-25", value2025: "$25-40", value2025Num: 32, image: "images/PXL_20260112_200708567.jpg" },
-    { artist: "Various Artists", album: "Saturday Night Fever (Soundtrack)", year: 1977, label: "RSO (RS-2-4001)", pressing: "Original US, 2LP", chartPosition: "#1 Billboard 200", interestingFact: "24 weeks at #1. Bee Gees dominated. 40 million copies sold worldwide.", value1980: "$8-12", value2000: "$10-18", value2025: "$15-28", value2025Num: 21, image: "images/PXL_20260112_200719247.MP.jpg" },
+    { artist: "Various Artists", album: "Saturday Night Fever (Soundtrack)", year: 1977, label: "RSO (RS-2-4001)", pressing: "Original US, 2LP", chartPosition: "#1 Billboard 200", interestingFact: "Spent 24 weeks at #1 - one of best-selling soundtracks ever with 40+ million copies. Bee Gees wrote songs in just one weekend. Defined disco era and launched Travolta to superstardom.", value1980: "$8-12", value2000: "$10-18", value2025: "$15-28", value2025Num: 21, image: "images/PXL_20260112_200719247.MP.jpg" },
     { artist: "Leo Sayer", album: "Silverbird", year: 1973, label: "Chrysalis (CHR 1050)", pressing: "Original US pressing", chartPosition: "#138 Billboard 200", interestingFact: "Debut album. The Show Must Go On later covered by Three Dog Night.", value1980: "$4-7", value2000: "$8-15", value2025: "$12-20", value2025Num: 16, image: "images/PXL_20260112_200728317.jpg" },
     { artist: "Leo Sayer", album: "Just a Boy", year: 1974, label: "Chrysalis (CHR 1076)", pressing: "Original US pressing", chartPosition: "#16 Billboard 200", interestingFact: "Long Tall Glasses hit #9. Little Prince-inspired cover art.", value1980: "$4-7", value2000: "$8-15", value2025: "$12-20", value2025Num: 16, image: "images/PXL_20260112_200736772.MP.jpg" },
     { artist: "Seals & Crofts", album: "Summer Breeze", year: 1972, label: "Warner Bros (BS 2629)", pressing: "Original US pressing", chartPosition: "#7 Billboard 200", interestingFact: "Title track became soft rock staple. Hummingbird. Both Baha'i members.", value1980: "$4-7", value2000: "$8-15", value2025: "$12-22", value2025Num: 17, image: "images/PXL_20260112_200753607.jpg" },
@@ -447,7 +896,7 @@ var records = [
     { artist: "Seals & Crofts", album: "Unborn Child", year: 1974, label: "Warner Bros (W 2761)", pressing: "Original US pressing", chartPosition: "#14 Billboard 200", interestingFact: "Controversial anti-abortion concept album. Artistic butterfly cover.", value1980: "$4-7", value2000: "$8-15", value2025: "$12-22", value2025Num: 17, image: "images/PXL_20260112_200801644.jpg" },
     { artist: "Various Artists", album: "The Secret Policeman's Ball - The Music", year: 1980, label: "Island (ILPS 9601)", pressing: "Original US pressing", chartPosition: "Did not chart", interestingFact: "Amnesty International benefit. Pete Townshend acoustic performances legendary.", value1980: "$5-8", value2000: "$10-18", value2025: "$15-25", value2025Num: 20, image: "images/PXL_20260112_200809644.jpg" },
     { artist: "Various Artists", album: "The Secret Policeman's Other Ball - The Music", year: 1982, label: "Springtime (SP-1-3023)", pressing: "Original US pressing", chartPosition: "#111 Billboard 200", interestingFact: "Sting, Jeff Beck, Eric Clapton. Raised funds for political prisoners.", value1980: "N/A", value2000: "$10-18", value2025: "$15-25", value2025Num: 20, image: "images/PXL_20260112_200818521.jpg" },
-    { artist: "Sex Pistols", album: "Never Mind the Bollocks, Here's the Sex Pistols", year: 1977, label: "Warner Bros (BSK 3147)", pressing: "Original US pressing", chartPosition: "#106 Billboard 200", interestingFact: "Only studio album. Anarchy in the UK, God Save the Queen. Changed music forever.", value1980: "$15-25", value2000: "$35-60", value2025: "$60-100", value2025Num: 80, image: "images/PXL_20260112_200826388.jpg" },
+    { artist: "Sex Pistols", album: "Never Mind the Bollocks, Here's the Sex Pistols", year: 1977, label: "Warner Bros (BSK 3147)", pressing: "Original US pressing", chartPosition: "#106 Billboard 200", interestingFact: "Only studio album - arguably the most influential punk record ever. Title caused UK obscenity trial (acquitted). Anarchy in the UK and God Save the Queen sparked moral panic.", value1980: "$15-25", value2000: "$35-60", value2025: "$60-100", value2025Num: 80, image: "images/PXL_20260112_200826388.jpg" },
     { artist: "Sex Pistols", album: "Never Mind the Bollocks, Here's the Sex Pistols", year: 1977, label: "Warner Bros (BSK 3147)", pressing: "Original US pressing (2nd copy - orange/green variant)", chartPosition: "#106 Billboard 200", interestingFact: "Second copy with alternate orange and green color scheme. Rare variant sleeve.", value1980: "$12-18", value2000: "$30-45", value2025: "$55-85", value2025Num: 70, image: "images/PXL_20260112_200837305.jpg" },
     { artist: "Sex Pistols", album: "The Great Rock 'n' Roll Swindle", year: 1979, label: "Virgin (VD 2510)", pressing: "Original pressing", chartPosition: "N/A", interestingFact: "Film soundtrack. Malcolm McLaren's vision. My Way and Something Else.", value1980: "$10-15", value2000: "$25-40", value2025: "$40-65", value2025Num: 52, image: "images/PXL_20260112_200847133.jpg" },
     { artist: "Sex Pistols", album: "Flogging a Dead Horse", year: 1979, label: "Virgin (V 2142)", pressing: "Original pressing", chartPosition: "N/A (compilation)", interestingFact: "Singles compilation released after breakup. Complete A and B sides.", value1980: "$8-14", value2000: "$20-35", value2025: "$35-55", value2025Num: 45, image: "images/PXL_20260112_200902360.MP.jpg" },
@@ -504,11 +953,11 @@ var records = [
     { artist: "Bruce Springsteen", album: "The River / Born to Run / Rosalita (Promo)", year: 1981, label: "Columbia (Promo)", pressing: "US Promotional Compilation", chartPosition: "N/A - Promo", interestingFact: "Rare promotional compilation. Radio station or press copy. Highly collectible.", value1980: "$12-18", value2000: "$35-55", value2025: "$85-120", value2025Num: 100, image: "images/PXL_20260112_201642813.jpg" },
     { artist: "Bruce Springsteen", album: "Greetings from Asbury Park, N.J.", year: 1973, label: "Columbia (KC 31903)", pressing: "US Original", chartPosition: "#60 US (later)", interestingFact: "Debut album marketed as \'the new Dylan\'. Contains \'Blinded by the Light\'.", value1980: "$10-15", value2000: "$25-38", value2025: "$60-90", value2025Num: 75, image: "images/PXL_20260112_201652943.jpg" },
     { artist: "Bruce Springsteen", album: "The Wild, the Innocent & the E Street Shuffle", year: 1973, label: "Columbia (KC 32432)", pressing: "US Original", chartPosition: "#59 US (later)", interestingFact: "Extended song structures. Contains \'Rosalita\'. E Street Band fully formed.", value1980: "$10-15", value2000: "$22-35", value2025: "$55-80", value2025Num: 65, image: "images/PXL_20260112_201702887~2.jpg" },
-    { artist: "Bruce Springsteen", album: "Born to Run", year: 1975, label: "Columbia (PC 33795)", pressing: "US Original", chartPosition: "#3 US", interestingFact: "Breakthrough album. Jon Landau\'s \'rock and roll future\' quote. Wall of sound production.", value1980: "$8-12", value2000: "$16-25", value2025: "$38-55", value2025Num: 45, image: "images/PXL_20260112_201713117.MP~2.jpg" },
+    { artist: "Bruce Springsteen", album: "Born to Run", year: 1975, label: "Columbia (PC 33795)", pressing: "US Original", chartPosition: "#3 US", interestingFact: "Breakthrough that took 6 months to record. Jon Landau declared him 'rock and roll future' in famous review. Title track took 6 months alone. Eric Meola cover photo iconic.", value1980: "$8-12", value2000: "$16-25", value2025: "$38-55", value2025Num: 45, image: "images/PXL_20260112_201713117.MP~2.jpg" },
     { artist: "Bruce Springsteen", album: "Darkness on the Edge of Town", year: 1978, label: "Columbia (JC 35318)", pressing: "US Original", chartPosition: "#5 US", interestingFact: "Released after lawsuit. Darker working-class themes.", value1980: "$6-10", value2000: "$15-22", value2025: "$32-48", value2025Num: 40, image: "images/PXL_20260112_201722623~2.jpg" },
     { artist: "Bruce Springsteen", album: "The River", year: 1980, label: "Columbia (PC2 36854)", pressing: "US Original Double LP", chartPosition: "#1 US", interestingFact: "First #1 and first double LP. \'Hungry Heart\' was first Top 10 single.", value1980: "$10-14", value2000: "$18-28", value2025: "$42-60", value2025Num: 50, image: "images/PXL_20260112_201734446.jpg" },
-    { artist: "Bruce Springsteen", album: "Nebraska", year: 1982, label: "Columbia (TC 38358)", pressing: "US Original", chartPosition: "#3 US", interestingFact: "Recorded solo on 4-track cassette. Originally demos that became final album.", value1980: "N/A", value2000: "$15-22", value2025: "$35-52", value2025Num: 42, image: "images/PXL_20260112_201744348.jpg" },
-    { artist: "Bruce Springsteen", album: "Born in the U.S.A.", year: 1984, label: "Columbia (QC 38653)", pressing: "US Original", chartPosition: "#1 US", interestingFact: "Best-selling with 30+ million copies. Seven Top 10 singles.", value1980: "N/A", value2000: "$10-15", value2025: "$22-35", value2025Num: 28, image: "images/PXL_20260112_201754006.jpg" },
+    { artist: "Bruce Springsteen", album: "Nebraska", year: 1982, label: "Columbia (TC 38358)", pressing: "US Original", chartPosition: "#3 US", interestingFact: "Stark acoustic album recorded alone on 4-track Tascam Portastudio. Demo recordings became final album when studio versions lost the raw intensity. Title track inspired by Badlands murders.", value1980: "N/A", value2000: "$15-22", value2025: "$35-52", value2025Num: 42, image: "images/PXL_20260112_201744348.jpg" },
+    { artist: "Bruce Springsteen", album: "Born in the U.S.A.", year: 1984, label: "Columbia (QC 38653)", pressing: "US Original", chartPosition: "#1 US", interestingFact: "Over 30 million sold - tied record for 7 Top 10 singles from one album. Title track often misunderstood as patriotic anthem when actually critical of Vietnam vet treatment.", value1980: "N/A", value2000: "$10-15", value2025: "$22-35", value2025Num: 28, image: "images/PXL_20260112_201754006.jpg" },
     { artist: "Bruce Springsteen", album: "Cover Me (12-inch Single)", year: 1984, label: "Columbia (44-05086)", pressing: "US 12-inch Single", chartPosition: "#7 US", interestingFact: "Extended remix. Originally written for Donna Summer. Arthur Baker remix.", value1980: "N/A", value2000: "$10-15", value2025: "$20-32", value2025Num: 25, image: "images/PXL_20260112_201805780.MP.jpg" },
     { artist: "Bruce Springsteen", album: "Dancing in the Dark (12-inch Single)", year: 1984, label: "Columbia (44-04463)", pressing: "US 12-inch Single", chartPosition: "#2 US", interestingFact: "Biggest hit single. Famous video by Brian De Palma with Courteney Cox.", value1980: "N/A", value2000: "$10-15", value2025: "$22-35", value2025Num: 28, image: "images/PXL_20260112_201824011.jpg" },
     { artist: "Bruce Springsteen", album: "Born in the U.S.A. (12-inch Single)", year: 1984, label: "Columbia (44-05003)", pressing: "US 12-inch Single", chartPosition: "#9 US", interestingFact: "12-inch single release. Features \'Shut Out the Light\' on B-side.", value1980: "N/A", value2000: "$10-15", value2025: "$20-32", value2025Num: 25, image: "images/PXL_20260112_201836455.MP.jpg" },
@@ -607,7 +1056,7 @@ var records = [
     { artist: "Various Artists", album: "Flashdance (Original Soundtrack)", year: 1983, label: "Casablanca (422-811 492-1)", pressing: "Original US pressing", chartPosition: "#1 Billboard 200", interestingFact: "What a Feeling and Maniac both hit #1. Jennifer Beals film phenomenon. Giorgio Moroder produced.", value1980: "N/A", value2000: "$8-15", value2025: "$15-25", value2025Num: 20, image: "images/PXL_20260112_205941693.MP.jpg" },
     { artist: "Fleetwood Mac", album: "Bare Trees", year: 1972, label: "Reprise (MS 2080)", pressing: "Original US pressing", chartPosition: "#70 Billboard 200", interestingFact: "Bob Welch era classic. Sentimental Lady later re-recorded solo. Danny Kirwan's last full album with band.", value1980: "$8-12", value2000: "$15-25", value2025: "$28-45", value2025Num: 36, image: "images/PXL_20260112_205951860.jpg" },
     { artist: "Fleetwood Mac", album: "Fleetwood Mac", year: 1975, label: "Reprise (MS 2225)", pressing: "Original US pressing", chartPosition: "#1 Billboard 200", interestingFact: "Buckingham-Nicks join. Rhiannon, Say You Love Me, Landslide. Rebirth of the band. Over 7 million sold.", value1980: "$8-12", value2000: "$18-30", value2025: "$35-55", value2025Num: 45, image: "images/PXL_20260112_210003164.MP.jpg" },
-    { artist: "Fleetwood Mac", album: "Rumours", year: 1977, label: "Warner Bros (BSK 3010)", pressing: "Original US pressing", chartPosition: "#1 Billboard 200 (31 weeks)", interestingFact: "One of best-selling albums ever. Dreams, Go Your Own Way, The Chain. Recorded during band breakups.", value1980: "$8-12", value2000: "$20-35", value2025: "$40-65", value2025Num: 52, image: "images/PXL_20260112_210011842.MP.jpg" },
+    { artist: "Fleetwood Mac", album: "Rumours", year: 1977, label: "Warner Bros (BSK 3010)", pressing: "Original US pressing", chartPosition: "#1 Billboard 200 (31 weeks)", interestingFact: "Over 40 million sold - one of best-selling albums ever. Recorded amid two divorces within band. Dreams became Nicks's only #1. Won Grammy Album of Year.", value1980: "$8-12", value2000: "$20-35", value2025: "$40-65", value2025Num: 52, image: "images/PXL_20260112_210011842.MP.jpg" },
     { artist: "Focus", album: "Live at the Rainbow", year: 1973, label: "Sire (SAS-7408)", pressing: "Original US pressing", chartPosition: "#35 Billboard 200", interestingFact: "Dutch prog legends captured live. Hocus Pocus extended. Jan Akkerman guitar virtuosity. Thijs van Leer yodeling.", value1980: "$8-12", value2000: "$18-28", value2025: "$30-48", value2025Num: 39, image: "images/PXL_20260112_210020912.jpg" },
     { artist: "Foghat", album: "Foghat (Rock and Roll)", year: 1973, label: "Bearsville (BR 2136)", pressing: "Original US pressing", chartPosition: "#127 Billboard 200", interestingFact: "Third album with rock/bread cover visual pun. Road Fever. Harder edge than debut. UK blues-rock expats.", value1980: "$6-10", value2000: "$12-20", value2025: "$22-35", value2025Num: 28, image: "images/PXL_20260112_210030404.jpg" },
     { artist: "John Fogerty", album: "Centerfield", year: 1985, label: "Warner Bros (1-25203)", pressing: "Original US pressing", chartPosition: "#1 Billboard 200", interestingFact: "CCR frontman's comeback after legal battles. Title track became baseball anthem. The Old Man Down the Road.", value1980: "N/A", value2000: "$10-18", value2025: "$20-35", value2025Num: 27, image: "images/PXL_20260112_210122190.jpg" },
@@ -626,7 +1075,7 @@ var records = [
     { artist: "Peter Gabriel", album: "Peter Gabriel (Melt)", year: 1980, label: "Mercury (SRM-1-3848)", pressing: "Original US pressing", chartPosition: "#22 Billboard 200", interestingFact: "Games Without Frontiers, Biko. No cymbals used. Melting face cover. Art rock masterpiece.", value1980: "$8-12", value2000: "$18-30", value2025: "$35-55", value2025Num: 45, image: "images/PXL_20260112_210348487.MP.jpg" },
     { artist: "Peter Gabriel", album: "Peter Gabriel (Security)", year: 1982, label: "Geffen (GHS 2011)", pressing: "Original US pressing", chartPosition: "#28 Billboard 200", interestingFact: "Shock the Monkey MTV hit. Fourth self-titled. World music influences deepen. WOMAD festival era.", value1980: "N/A", value2000: "$12-20", value2025: "$22-38", value2025Num: 30, image: "images/PXL_20260112_210358731.jpg" },
     { artist: "Peter Gabriel", album: "So", year: 1986, label: "Geffen (GHS 24088)", pressing: "Original US pressing", chartPosition: "#2 Billboard 200", interestingFact: "Sledgehammer, In Your Eyes, Big Time. Commercial breakthrough. 5x platinum. Groundbreaking videos.", value1980: "N/A", value2000: "$12-20", value2025: "$22-38", value2025Num: 30, image: "images/PXL_20260112_210408468.jpg" },
-    { artist: "Marvin Gaye", album: "What's Going On", year: 1971, label: "Tamla (TS 310)", pressing: "Original US pressing", chartPosition: "#6 Billboard 200", interestingFact: "Concept album masterpiece. Mercy Mercy Me, Inner City Blues. Changed soul music forever. Motown landmark.", value1980: "$15-25", value2000: "$40-60", value2025: "$70-110", value2025Num: 90, image: "images/PXL_20260112_210418718.jpg" },
+    { artist: "Marvin Gaye", album: "What's Going On", year: 1971, label: "Tamla (TS 310)", pressing: "Original US pressing", chartPosition: "#6 Billboard 200", interestingFact: "Revolutionary concept album Motown initially refused to release. Gaye had to threaten retirement. Vietnam War, ecology, and poverty themes unprecedented in soul music. Frequently ranked among greatest albums ever.", value1980: "$15-25", value2000: "$40-60", value2025: "$70-110", value2025Num: 90, image: "images/PXL_20260112_210418718.jpg" },
     { artist: "Marvin Gaye", album: "Every Great Motown Hit of Marvin Gaye", year: 1983, label: "Motown (6058ML)", pressing: "Original US pressing", chartPosition: "N/A (compilation)", interestingFact: "15 essential tracks. I Heard It Through the Grapevine, Let's Get It On, Sexual Healing not included.", value1980: "N/A", value2000: "$8-15", value2025: "$15-25", value2025Num: 20, image: "images/PXL_20260112_210429517.jpg" },
     { artist: "Genesis", album: "Foxtrot", year: 1972, label: "Charisma/Buddah (CAS 1058)", pressing: "Original US pressing", chartPosition: "#12 UK", interestingFact: "Supper's Ready 23-minute epic. Watcher of the Skies. Paul Whitehead fox-woman cover. Prog landmark.", value1980: "$10-15", value2000: "$25-40", value2025: "$45-70", value2025Num: 57, image: "images/PXL_20260112_210440867.MP.jpg" },
     { artist: "Genesis", album: "Genesis Live", year: 1973, label: "Charisma/Buddah (CAS 1666)", pressing: "Original US pressing", chartPosition: "#9 UK", interestingFact: "Peter Gabriel era live. Watcher of the Skies, Musical Box. Theatrical stage show captured.", value1980: "$8-12", value2000: "$18-28", value2025: "$32-50", value2025Num: 41, image: "images/PXL_20260112_210452936.jpg" },
@@ -744,12 +1193,12 @@ var records = [
     { artist: "Kiss the Tiger", album: "Infinite Love", year: 2024, label: "Independent", pressing: "Limited vinyl pressing", chartPosition: "N/A (indie)", interestingFact: "Latest release. Expanded sound. Minneapolis rock scene staple. Critical acclaim.", value1980: "N/A", value2000: "N/A", value2025: "$25-40", value2025Num: 32, image: "images/PXL_20260113_170445493.jpg" },
     { artist: "Kris Kristofferson", album: "Border Lord", year: 1972, label: "Monument (KZ 31302)", pressing: "Original US pressing", chartPosition: "#51 Billboard 200", interestingFact: "Third solo album. Josie, Jesus Was a Capricorn preview. Outlaw country poet.", value1980: "$5-8", value2000: "$10-18", value2025: "$18-30", value2025Num: 24, image: "images/PXL_20260113_170508195.jpg" },
     { artist: "Cyndi Lauper", album: "She's So Unusual", year: 1983, label: "Portrait (FR 38930)", pressing: "Original US pressing", chartPosition: "#4 Billboard 200", interestingFact: "Girls Just Want to Have Fun, Time After Time. First female artist with four top-five singles from debut.", value1980: "N/A", value2000: "$10-18", value2025: "$22-38", value2025Num: 30, image: "images/PXL_20260113_170519954.jpg" },
-    { artist: "Led Zeppelin", album: "Led Zeppelin", year: 1969, label: "Atlantic (SD 8216)", pressing: "Original US pressing", chartPosition: "#10 Billboard 200", interestingFact: "Debut recorded in 30 hours. Good Times Bad Times, Dazed and Confused. Changed rock forever.", value1980: "$12-18", value2000: "$30-50", value2025: "$60-100", value2025Num: 80, image: "images/PXL_20260113_170530928.jpg" },
+    { artist: "Led Zeppelin", album: "Led Zeppelin", year: 1969, label: "Atlantic (SD 8216)", pressing: "Original US pressing", chartPosition: "#10 Billboard 200", interestingFact: "Debut recorded in just 36 hours for £1,782. Band formed from ashes of Yardbirds. Established blueprint for heavy metal and hard rock.", value1980: "$12-18", value2000: "$30-50", value2025: "$60-100", value2025Num: 80, image: "images/PXL_20260113_170530928.jpg" },
     { artist: "Led Zeppelin", album: "Led Zeppelin II", year: 1969, label: "Atlantic (SD 8236)", pressing: "Original US pressing", chartPosition: "#1 Billboard 200", interestingFact: "Whole Lotta Love, Ramble On. Recorded on tour. Defined heavy rock blueprint.", value1980: "$10-15", value2000: "$28-45", value2025: "$55-85", value2025Num: 70, image: "images/PXL_20260113_170541963.MP.jpg" },
     { artist: "Led Zeppelin", album: "Led Zeppelin III", year: 1970, label: "Atlantic (SD 7201)", pressing: "Original US pressing", chartPosition: "#1 Billboard 200", interestingFact: "Immigrant Song, Since I've Been Loving You. Acoustic influence. Spinning wheel cover design.", value1980: "$10-15", value2000: "$28-45", value2025: "$50-80", value2025Num: 65, image: "images/PXL_20260113_170555763.jpg" },
-    { artist: "Led Zeppelin", album: "Led Zeppelin IV", year: 1971, label: "Atlantic (SD 7208)", pressing: "Original US pressing", chartPosition: "#2 Billboard 200", interestingFact: "Stairway to Heaven, Black Dog, Rock and Roll. Untitled. 37 million sold. Greatest rock album.", value1980: "$10-15", value2000: "$30-50", value2025: "$60-95", value2025Num: 77, image: "images/PXL_20260113_170606382.jpg" },
+    { artist: "Led Zeppelin", album: "Led Zeppelin IV", year: 1971, label: "Atlantic (SD 7208)", pressing: "Original US pressing", chartPosition: "#2 Billboard 200", interestingFact: "Officially untitled - no text on cover. Contains Stairway to Heaven, never released as single yet most-played FM radio song ever. Over 37 million sold worldwide.", value1980: "$10-15", value2000: "$30-50", value2025: "$60-95", value2025Num: 77, image: "images/PXL_20260113_170606382.jpg" },
     { artist: "Led Zeppelin", album: "Houses of the Holy", year: 1973, label: "Atlantic (SD 7255)", pressing: "Original US pressing", chartPosition: "#1 Billboard 200", interestingFact: "The Rain Song, No Quarter, Over the Hills. Genre-expanding. Hipgnosis cover at Giant's Causeway.", value1980: "$8-12", value2000: "$25-40", value2025: "$45-70", value2025Num: 57, image: "images/PXL_20260113_170621657.jpg" },
-    { artist: "Led Zeppelin", album: "Physical Graffiti", year: 1975, label: "Swan Song (SS 2-200)", pressing: "Original US, 2LP", chartPosition: "#1 Billboard 200", interestingFact: "Kashmir, Trampled Under Foot. Double album epic. Die-cut sleeve NYC tenement.", value1980: "$12-18", value2000: "$30-50", value2025: "$55-90", value2025Num: 72, image: "images/PXL_20260113_170639106.jpg" },
+    { artist: "Led Zeppelin", album: "Physical Graffiti", year: 1975, label: "Swan Song (SS 2-200)", pressing: "Original US, 2LP", chartPosition: "#1 Billboard 200", interestingFact: "Epic double album mixing new songs with outtakes from previous sessions. Die-cut window sleeve shows NYC tenement at 96 St. Marks Place. Kashmir became defining song.", value1980: "$12-18", value2000: "$30-50", value2025: "$55-90", value2025Num: 72, image: "images/PXL_20260113_170639106.jpg" },
     { artist: "Led Zeppelin", album: "Presence", year: 1976, label: "Swan Song (SS 8416)", pressing: "Original US pressing", chartPosition: "#1 Billboard 200", interestingFact: "Achilles Last Stand, Nobody's Fault but Mine. Recorded during Plant's recovery. The Object artwork.", value1980: "$8-12", value2000: "$20-32", value2025: "$38-60", value2025Num: 49, image: "images/PXL_20260113_170649930.jpg" },
     { artist: "Led Zeppelin", album: "In Through the Out Door", year: 1979, label: "Swan Song (SS 16002)", pressing: "Original US pressing", chartPosition: "#1 Billboard 200", interestingFact: "All My Love, Fool in the Rain. Six different sleeve variations. Last studio album.", value1980: "$8-12", value2000: "$20-32", value2025: "$35-55", value2025Num: 45, image: "images/PXL_20260113_170659931.jpg" },
     { artist: "Led Zeppelin", album: "Coda", year: 1982, label: "Swan Song (90051-1)", pressing: "Original US pressing", chartPosition: "#6 Billboard 200", interestingFact: "Posthumous outtakes compilation. Bonzo's Montreux. Final official release after Bonham's death.", value1980: "N/A", value2000: "$15-25", value2025: "$28-45", value2025Num: 36, image: "images/PXL_20260113_170712686.jpg" },
@@ -928,11 +1377,11 @@ var records = [
     { artist: "The Who", album: "Happy Jack", year: 1967, label: "Decca (DL 74892)", pressing: "US reissue (MCA)", chartPosition: "#67 Billboard 200", interestingFact: "A Quick One repackaged for US. Title track hit. Mini-opera precursor. Pop art cartoon cover.", value1980: "$10-15", value2000: "$25-40", value2025: "$45-75", value2025Num: 60, image: "images/PXL_20260113_182136792.jpg" },
     { artist: "The Who", album: "The Who Sell Out", year: 1967, label: "Decca (DL 74950)", pressing: "Original US stereo", chartPosition: "#48 Billboard 200", interestingFact: "Concept album with fake ads. I Can See for Miles #9. Odorono, baked beans cover. Psychedelic peak.", value1980: "$15-25", value2000: "$40-65", value2025: "$75-120", value2025Num: 97, image: "images/PXL_20260113_182147789.jpg" },
     { artist: "The Who", album: "Magic Bus: The Who on Tour", year: 1968, label: "Decca (DL 75064)", pressing: "Original US stereo", chartPosition: "#39 Billboard 200", interestingFact: "US-only compilation. Title track hit. Psychedelic bus cover. Pictures of Lily, Call Me Lightning.", value1980: "$10-15", value2000: "$25-40", value2025: "$45-70", value2025Num: 57, image: "images/PXL_20260113_182157659.jpg" },
-    { artist: "The Who", album: "Tommy", year: 1969, label: "Decca (DXSW 7205)", pressing: "Original US, 2LP", chartPosition: "#4 Billboard 200", interestingFact: "First rock opera. Pinball Wizard, See Me Feel Me. Deaf dumb blind boy. Groundbreaking concept.", value1980: "$15-25", value2000: "$35-55", value2025: "$65-100", value2025Num: 82, image: "images/PXL_20260113_182244630.jpg" },
+    { artist: "The Who", album: "Tommy", year: 1969, label: "Decca (DXSW 7205)", pressing: "Original US, 2LP", chartPosition: "#4 Billboard 200", interestingFact: "First true rock opera - Townshend's deaf, dumb, and blind boy concept changed what rock albums could be. Became 1975 Ken Russell film. Pinball Wizard remains iconic.", value1980: "$15-25", value2000: "$35-55", value2025: "$65-100", value2025Num: 82, image: "images/PXL_20260113_182244630.jpg" },
     { artist: "The Who", album: "The Best of The Who", year: 1969, label: "Polydor (184 152)", pressing: "European pressing", chartPosition: "N/A (import)", interestingFact: "European compilation. I'm a Boy, Substitute, Happy Jack. Illustrated pop art cover. Import pressing.", value1980: "$8-12", value2000: "$18-28", value2025: "$32-50", value2025Num: 41, image: "images/PXL_20260113_182216608.jpg" },
-    { artist: "The Who", album: "Live at Leeds", year: 1970, label: "Decca (DL 79175)", pressing: "Original US pressing", chartPosition: "#4 Billboard 200", interestingFact: "Greatest live rock album. Stamped brown sleeve with inserts. Young Man Blues, Summertime Blues.", value1980: "$12-18", value2000: "$30-50", value2025: "$55-90", value2025Num: 72, image: "images/PXL_20260113_182227268.jpg" },
+    { artist: "The Who", album: "Live at Leeds", year: 1970, label: "Decca (DL 79175)", pressing: "Original US pressing", chartPosition: "#4 Billboard 200", interestingFact: "Often called greatest live rock album ever recorded. Raw six-song set captures band at ferocious peak. Unique brown stamped sleeve with 12 inserts replicating band memorabilia.", value1980: "$12-18", value2000: "$30-50", value2025: "$55-90", value2025Num: 72, image: "images/PXL_20260113_182227268.jpg" },
     { artist: "The Who", album: "Meaty Beaty Big and Bouncy", year: 1971, label: "Decca (DL 79184)", pressing: "Original US pressing", chartPosition: "#11 Billboard 200", interestingFact: "Singles compilation. My Generation, I Can See for Miles. Essential hits. Street kids sepia cover.", value1980: "$8-12", value2000: "$18-28", value2025: "$32-50", value2025Num: 41, image: "images/PXL_20260113_182206649.MP.jpg" },
-    { artist: "The Who", album: "Who's Next", year: 1971, label: "Decca (DL 79182)", pressing: "Original US pressing", chartPosition: "#4 Billboard 200", interestingFact: "Baba O'Riley, Won't Get Fooled Again. Lifehouse fragments. Monolith cover. Synthesizer pioneering.", value1980: "$12-18", value2000: "$30-50", value2025: "$55-90", value2025Num: 72, image: "images/PXL_20260113_182254755.jpg" },
+    { artist: "The Who", album: "Who's Next", year: 1971, label: "Decca (DL 79182)", pressing: "Original US pressing", chartPosition: "#4 Billboard 200", interestingFact: "Salvaged from abandoned Lifehouse project. Pioneering use of synthesizers. Ethan Russell's monolith photo shows band after urinating on concrete slab.", value1980: "$12-18", value2000: "$30-50", value2025: "$55-90", value2025Num: 72, image: "images/PXL_20260113_182254755.jpg" },
     { artist: "The Who", album: "Quadrophenia", year: 1973, label: "MCA (MCA2-10004)", pressing: "Original US, 2LP", chartPosition: "#2 Billboard 200", interestingFact: "Mod concept album. Love Reign O'er Me, 5:15. Jimmy's four personalities. Photo booklet included.", value1980: "$12-18", value2000: "$30-50", value2025: "$55-85", value2025Num: 70, image: "images/PXL_20260113_182308270.jpg" },
     { artist: "The Who", album: "Odds & Sods", year: 1974, label: "MCA (MCA-2126)", pressing: "Original US pressing", chartPosition: "#15 Billboard 200", interestingFact: "Rarities compilation. Pure and Easy, Long Live Rock. Football helmet ROCK cover.", value1980: "$8-12", value2000: "$18-28", value2025: "$32-50", value2025Num: 41, image: "images/PXL_20260113_182428310.jpg" },
     { artist: "Various Artists", album: "Tommy (Original Soundtrack)", year: 1975, label: "Polydor (PD 2-9502)", pressing: "Original US, 2LP", chartPosition: "#2 Billboard 200", interestingFact: "Ken Russell film. Elton John, Tina Turner, Eric Clapton. Daltrey stars. Ann-Margret Oscar nom.", value1980: "$8-12", value2000: "$15-25", value2025: "$28-45", value2025Num: 36, image: "images/PXL_20260113_182440149.jpg" },
@@ -984,140 +1433,471 @@ var records = [
     { artist: "Frank Zappa", album: "Apostrophe (')", year: 1974, label: "DiscReet (DS 2175)", pressing: "Original US pressing", chartPosition: "#10 Billboard 200", interestingFact: "Most commercially successful Zappa. Don't Eat the Yellow Snow. Jack Bruce on bass. Closeup face cover.", value1980: "$8-12", value2000: "$20-32", value2025: "$35-55", value2025Num: 45, image: "images/PXL_20260113_184719467.MP.jpg" },
 ];
 
-        let currentSort = 'artist';
-        let currentDecade = '';
-        let searchTerm = '';
-        let yearFilter = '';
+/* ═══ UTILITY ═══ */
+const $ = id => document.getElementById(id);
+const esc = s => { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; };
 
-        function toggleInfo() {
-            const content = document.getElementById('infoContent');
-            const toggle = document.getElementById('infoToggle');
-            content.classList.toggle('open');
-            toggle.classList.toggle('open');
+function debounce(fn, ms) {
+    let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
+}
+
+function highlightMatch(text, term) {
+    if (!term || !text) return esc(text || '');
+    const escaped = esc(text);
+    const re = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    return escaped.replace(re, '<mark>$1</mark>');
+}
+
+function parseMidValue(str) {
+    if (!str) return 0;
+    const m = str.match(/\$(\d+)(?:\s*-\s*(\d+))?/);
+    if (!m) return 0;
+    return m[2] ? Math.round((parseInt(m[1]) + parseInt(m[2])) / 2) : parseInt(m[1]);
+}
+
+function getPressingType(p) {
+    if (!p) return 'other';
+    const l = p.toLowerCase();
+    if (l.includes('original')) return 'original';
+    if (l.includes('reissue') || l.includes('re-issue')) return 'reissue';
+    if (l.includes('compilation') || l.includes('budget')) return 'compilation';
+    return 'other';
+}
+
+/* ═══ STATE ═══ */
+let st = {
+    search: '', year: '', decade: '', artist: '', pressing: '',
+    sort: 'artist', sortAsc: true,
+    view: 'grid', page: 1, perPage: 48
+};
+let filtered = [];
+
+/* ═══ TABLE COLUMNS ═══ */
+const cols = [
+    { key: '#', label: '#', sortable: false },
+    { key: 'artist', label: 'Artist', sortable: true },
+    { key: 'album', label: 'Album', sortable: true },
+    { key: 'year', label: 'Year', sortable: true },
+    { key: 'label', label: 'Label', sortable: false },
+    { key: 'pressing', label: 'Pressing', sortable: false },
+    { key: 'chart', label: 'Chart', sortable: false },
+    { key: 'value', label: '2025 Value', sortable: true },
+    { key: 'fact', label: 'Fact', sortable: false },
+];
+
+/* ═══ INIT ═══ */
+function init() {
+    buildArtistDropdown();
+    buildTableHead();
+    applyFilters();
+    renderAnalytics();
+
+    window.addEventListener('scroll', () => $('btt').classList.toggle('vis', window.scrollY > 400));
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') { closeLightbox(); closeRandom(); }
+        if (e.key === '/' && !e.ctrlKey && !e.metaKey && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'SELECT') {
+            e.preventDefault(); $('searchBox').focus();
         }
+        if (e.key === 'ArrowLeft' && document.activeElement.tagName !== 'INPUT') goPage(st.page - 1);
+        if (e.key === 'ArrowRight' && document.activeElement.tagName !== 'INPUT') goPage(st.page + 1);
+    });
 
-        function openLightbox(imgSrc) {
-            const lightbox = document.getElementById('lightbox');
-            const lightboxImg = document.getElementById('lightboxImg');
-            lightboxImg.src = imgSrc;
-            lightbox.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
+    $('searchBox').addEventListener('input', debounce(e => { st.search = e.target.value.trim(); applyFilters(); }, 180));
+    $('yearBox').addEventListener('input', debounce(e => { st.year = e.target.value; applyFilters(); }, 300));
+    $('decadeBox').addEventListener('change', e => { st.decade = e.target.value; applyFilters(); });
+    $('artistBox').addEventListener('change', e => { st.artist = e.target.value; applyFilters(); });
+    $('pressingBox').addEventListener('change', e => { st.pressing = e.target.value; applyFilters(); });
+    $('ppSelect').addEventListener('change', e => { st.perPage = parseInt(e.target.value) || 0; st.page = 1; render(); });
+    $('rndModal').addEventListener('click', closeRandom);
 
-        function closeLightbox() {
-            document.getElementById('lightbox').classList.remove('active');
-            document.body.style.overflow = '';
-        }
+    document.querySelectorAll('#sortBtns .btn').forEach(b => b.addEventListener('click', () => {
+        const s = b.dataset.sort;
+        if (st.sort === s) { st.sortAsc = !st.sortAsc; }
+        else { st.sort = s; st.sortAsc = (s === 'value') ? false : true; }
+        document.querySelectorAll('#sortBtns .btn').forEach(x => x.classList.toggle('active', x.dataset.sort === st.sort));
+        $('sortDirBtn').textContent = st.sortAsc ? '↑' : '↓';
+        applyFilters();
+    }));
+}
 
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeLightbox();
-        });
+function buildArtistDropdown() {
+    const c = {};
+    records.forEach(r => c[r.artist] = (c[r.artist] || 0) + 1);
+    const sel = $('artistBox');
+    Object.entries(c).sort((a, b) => b[1] - a[1]).filter(([, n]) => n >= 3).forEach(([a, n]) => {
+        const o = document.createElement('option');
+        o.value = a; o.textContent = `${a} (${n})`;
+        sel.appendChild(o);
+    });
+}
 
-        function updateStats() {
-            const artists = [...new Set(records.map(r => r.artist))];
-            const years = records.map(r => r.year).filter(y => y);
-            const totalValue = records.reduce((sum, r) => sum + (r.value2025Num || 0), 0);
-            document.getElementById('totalRecords').textContent = records.length;
-            document.getElementById('totalArtists').textContent = artists.length;
-            document.getElementById('totalValue').textContent = '$' + totalValue.toLocaleString();
-            document.getElementById('yearRange').textContent = Math.min(...years) + '-' + Math.max(...years);
-        }
+function buildTableHead() {
+    $('tHead').innerHTML = cols.map(c => {
+        if (!c.sortable) return `<th>${c.label}</th>`;
+        return `<th class="${st.sort === c.key ? 'sorted' : ''}" onclick="colSort('${c.key}')">${c.label}<span class="arr">${st.sort === c.key ? (st.sortAsc ? '▲' : '▼') : '·'}</span></th>`;
+    }).join('');
+}
 
-        function filterAndSort() {
-            let filtered = records.filter(r => {
-                const matchesSearch = !searchTerm || 
-                    r.artist.toLowerCase().includes(searchTerm) ||
-                    r.album.toLowerCase().includes(searchTerm) ||
-                    (r.label && r.label.toLowerCase().includes(searchTerm));
-                
-                const matchesYear = !yearFilter || r.year === parseInt(yearFilter);
-                
-                let matchesDecade = true;
-                if (currentDecade === '1950') {
-                    matchesDecade = r.year < 1960;
-                } else if (currentDecade === '1990') {
-                    matchesDecade = r.year >= 1990;
-                } else if (currentDecade) {
-                    matchesDecade = r.year >= parseInt(currentDecade) && r.year < parseInt(currentDecade) + 10;
-                }
-                
-                return matchesSearch && matchesDecade && matchesYear;
-            });
-            
-            filtered.sort((a, b) => {
-                switch(currentSort) {
-                    case 'artist': return a.artist.localeCompare(b.artist);
-                    case 'album': return a.album.localeCompare(b.album);
-                    case 'year': return (a.year || 0) - (b.year || 0);
-                    case 'value': return (b.value2025Num || 0) - (a.value2025Num || 0);
-                    default: return 0;
-                }
-            });
-            return filtered;
-        }
+/* ═══ FILTERS ═══ */
+function applyFilters() {
+    const s = st.search.toLowerCase();
 
-        function renderRecords() {
-            const filtered = filterAndSort();
-            const grid = document.getElementById('recordGrid');
-            const noResults = document.getElementById('noResults');
-            
-            if (filtered.length === 0) {
-                grid.innerHTML = '';
-                noResults.style.display = 'block';
-                return;
+    filtered = records.filter(r => {
+        if (s && !(
+            r.artist.toLowerCase().includes(s) ||
+            r.album.toLowerCase().includes(s) ||
+            (r.label && r.label.toLowerCase().includes(s)) ||
+            (r.interestingFact && r.interestingFact.toLowerCase().includes(s)) ||
+            (r.pressing && r.pressing.toLowerCase().includes(s))
+        )) return false;
+
+        if (st.year && r.year !== parseInt(st.year)) return false;
+
+        if (st.decade) {
+            if (st.decade === 'pre60' && r.year >= 1960) return false;
+            if (st.decade === 'post90' && r.year < 1990) return false;
+            if (/^\d{4}$/.test(st.decade)) {
+                const d = parseInt(st.decade);
+                if (r.year < d || r.year >= d + 10) return false;
             }
-            noResults.style.display = 'none';
-            
-            grid.innerHTML = filtered.map(r => `
-                <div class="card">
-                    <div class="card-image" onclick="${r.image ? `openLightbox('${r.image}')` : ''}">
-                        ${r.image ? `<img src="${r.image}" alt="${r.album}" onerror="this.parentElement.innerHTML='<div class=\\'no-image\\'>🎵</div>'"><span class="image-hint">Click to enlarge</span>` : '<div class="no-image">🎵</div>'}
-                    </div>
-                    <div class="card-content">
-                        <div class="artist">${r.artist}</div>
-                        <div class="album">${r.album}</div>
-                        <div class="details">
-                            <span>📅 ${r.year || 'Unknown'}</span>
-                            <span>💿 ${r.label || 'Unknown Label'}</span>
-                            <span>📊 ${r.chartPosition || 'N/A'}</span>
-                        </div>
-                        ${r.interestingFact ? `<div class="fact">${r.interestingFact}</div>` : ''}
-                        <div class="values">
-                            <div class="value-item"><div class="value-year">1980</div><div class="value-price">${r.value1980 || 'N/A'}</div></div>
-                            <div class="value-item"><div class="value-year">2000</div><div class="value-price">${r.value2000 || 'N/A'}</div></div>
-                            <div class="value-item"><div class="value-year">2025</div><div class="value-price">${r.value2025 || 'N/A'}</div></div>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
         }
 
-        document.getElementById('search').addEventListener('input', (e) => {
-            searchTerm = e.target.value.toLowerCase();
-            renderRecords();
-        });
+        if (st.artist && r.artist !== st.artist) return false;
+        if (st.pressing && getPressingType(r.pressing) !== st.pressing) return false;
 
-        document.getElementById('yearSearch').addEventListener('input', (e) => {
-            yearFilter = e.target.value;
-            renderRecords();
-        });
+        return true;
+    });
 
-        document.getElementById('decadeFilter').addEventListener('change', (e) => {
-            currentDecade = e.target.value;
-            renderRecords();
-        });
+    const dir = st.sortAsc ? 1 : -1;
+    filtered.sort((a, b) => {
+        let v;
+        switch (st.sort) {
+            case 'artist': v = a.artist.localeCompare(b.artist) || (a.year || 0) - (b.year || 0); break;
+            case 'album': v = a.album.localeCompare(b.album); break;
+            case 'year': v = (a.year || 0) - (b.year || 0); break;
+            case 'value': v = (a.value2025Num || 0) - (b.value2025Num || 0); break;
+            default: v = 0;
+        }
+        return v * dir;
+    });
 
-        document.querySelectorAll('.sort-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                currentSort = btn.dataset.sort;
-                renderRecords();
-            });
-        });
+    st.page = 1;
+    updateStats();
+    renderChips();
+    buildTableHead();
+    render();
+}
 
-        updateStats();
-        renderRecords();
-    </script>
+/* ═══ STATS ═══ */
+function updateStats() {
+    const src = filtered.length === records.length ? records : filtered;
+    const isFiltered = filtered.length !== records.length;
+    const artists = new Set(src.map(r => r.artist));
+    const years = src.map(r => r.year).filter(Boolean);
+    const total = src.reduce((s, r) => s + (r.value2025Num || 0), 0);
+
+    $('stTotal').textContent = src.length.toLocaleString();
+    $('stTotalNote').textContent = isFiltered ? `of ${records.length}` : '';
+    $('stArtists').textContent = artists.size;
+    $('stValue').textContent = '$' + total.toLocaleString();
+    $('stAvg').textContent = src.length ? '$' + Math.round(total / src.length) : '$0';
+    $('stYears').textContent = years.length ? Math.min(...years) + '–' + Math.max(...years) : '—';
+}
+
+/* ═══ CHIPS ═══ */
+function renderChips() {
+    const chips = [];
+    if (st.search) chips.push({ label: `"${st.search}"`, clear: () => { st.search = ''; $('searchBox').value = ''; } });
+    if (st.year) chips.push({ label: `Year: ${st.year}`, clear: () => { st.year = ''; $('yearBox').value = ''; } });
+    if (st.decade) {
+        const names = { pre60: 'Pre-1960s', '1960': '1960s', '1970': '1970s', '1980': '1980s', post90: '1990s+' };
+        chips.push({ label: names[st.decade] || st.decade, clear: () => { st.decade = ''; $('decadeBox').value = ''; } });
+    }
+    if (st.artist) chips.push({ label: st.artist, clear: () => { st.artist = ''; $('artistBox').value = ''; } });
+    if (st.pressing) {
+        const names = { original: 'Original US', reissue: 'Reissue', compilation: 'Compilation', other: 'Other Pressing' };
+        chips.push({ label: names[st.pressing], clear: () => { st.pressing = ''; $('pressingBox').value = ''; } });
+    }
+
+    const el = $('filterChips');
+    if (!chips.length) { el.innerHTML = ''; return; }
+
+    el.innerHTML = chips.map((c, i) =>
+        `<span class="chip">${esc(c.label)}<button class="chip-x" data-idx="${i}">&times;</button></span>`
+    ).join('') + `<button class="chip-clear" onclick="clearAll()">Clear all</button>`;
+
+    el.querySelectorAll('.chip-x').forEach(b => b.addEventListener('click', () => {
+        chips[parseInt(b.dataset.idx)].clear();
+        applyFilters();
+    }));
+}
+
+function clearAll() {
+    st.search = ''; st.year = ''; st.decade = ''; st.artist = ''; st.pressing = '';
+    $('searchBox').value = ''; $('yearBox').value = '';
+    $('decadeBox').value = ''; $('artistBox').value = ''; $('pressingBox').value = '';
+    applyFilters();
+}
+
+/* ═══ RENDER ═══ */
+function render() {
+    const total = filtered.length;
+    const pp = st.perPage || total;
+    const totalPages = Math.max(1, Math.ceil(total / pp));
+    if (st.page > totalPages) st.page = totalPages;
+    const start = (st.page - 1) * pp;
+    const page = filtered.slice(start, start + pp);
+
+    $('resultsCt').textContent = `${total} record${total !== 1 ? 's' : ''}`;
+
+    if (st.view === 'grid') renderGrid(page, start);
+    else renderTable(page, start);
+
+    renderPager(totalPages);
+}
+
+function renderGrid(recs, startIdx) {
+    const g = $('recordGrid');
+    if (!recs.length) { g.innerHTML = `<div class="no-res" style="grid-column:1/-1"><div class="no-res-ico">🎵</div><div>No records found.</div></div>`; return; }
+    const s = st.search.toLowerCase();
+    g.innerHTML = recs.map((r, i) => {
+        const delay = Math.min(i * 15, 250);
+        return `<div class="card" style="animation-delay:${delay}ms">
+            <div class="card-img" data-img="${esc(r.image || '')}" onclick="clickImg(this)">
+                ${r.image ? `<img src="${esc(r.image)}" alt="${esc(r.album)}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'no-img\\'>🎵</div>'">` : '<div class="no-img">🎵</div>'}
+            </div>
+            <div class="card-body">
+                <div class="card-artist">${highlightMatch(r.artist, s)}</div>
+                <div class="card-album">${highlightMatch(r.album, s)}</div>
+                <div class="card-meta">
+                    <span>📅 ${r.year || 'Unknown'}</span>
+                    <span>💿 ${highlightMatch(r.label, s) || 'Unknown'}</span>
+                    ${r.chartPosition ? `<span>📊 ${esc(r.chartPosition)}</span>` : ''}
+                </div>
+                ${r.interestingFact ? `<div class="card-fact">${highlightMatch(r.interestingFact, s)}</div>` : ''}
+                <div class="card-vals">
+                    <div class="cv-item"><div class="cv-yr">1980</div><div class="cv-pr">${esc(r.value1980 || '—')}</div></div>
+                    <div class="cv-item"><div class="cv-yr">2000</div><div class="cv-pr">${esc(r.value2000 || '—')}</div></div>
+                    <div class="cv-item"><div class="cv-yr">2025</div><div class="cv-pr">${esc(r.value2025 || '—')}</div></div>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function clickImg(el) {
+    const img = el.dataset.img;
+    if (img) openLightbox(img);
+}
+
+function renderTable(recs, startIdx) {
+    const tb = $('tBody');
+    if (!recs.length) { tb.innerHTML = `<tr><td colspan="${cols.length}" style="text-align:center;padding:36px;color:var(--text-3)">No records found.</td></tr>`; return; }
+    const s = st.search.toLowerCase();
+    tb.innerHTML = recs.map((r, i) => `<tr>
+        <td class="tc-num">${startIdx + i + 1}</td>
+        <td class="tc-artist">${highlightMatch(r.artist, s)}</td>
+        <td>${highlightMatch(r.album, s)}</td>
+        <td class="tc-year">${r.year || '—'}</td>
+        <td class="tc-dim">${highlightMatch(r.label, s) || '—'}</td>
+        <td class="tc-dim">${esc(r.pressing || '—')}</td>
+        <td class="tc-dim">${esc(r.chartPosition || '—')}</td>
+        <td class="tc-val">${esc(r.value2025 || '—')}</td>
+        <td class="tc-fact" title="${esc(r.interestingFact || '')}">${esc(r.interestingFact || '—')}</td>
+    </tr>`).join('');
+}
+
+function renderPager(totalPages) {
+    const el = $('pager');
+    if (totalPages <= 1) { el.innerHTML = ''; return; }
+    let h = `<button class="pg-btn" onclick="goPage(${st.page - 1})" ${st.page === 1 ? 'disabled' : ''}>‹</button>`;
+    const pages = [1];
+    if (st.page > 3) pages.push('…');
+    for (let i = Math.max(2, st.page - 1); i <= Math.min(totalPages - 1, st.page + 1); i++) pages.push(i);
+    if (st.page < totalPages - 2) pages.push('…');
+    if (totalPages > 1) pages.push(totalPages);
+    pages.forEach(p => {
+        if (p === '…') h += `<span class="pg-info">…</span>`;
+        else h += `<button class="pg-btn${p === st.page ? ' active' : ''}" onclick="goPage(${p})">${p}</button>`;
+    });
+    h += `<button class="pg-btn" onclick="goPage(${st.page + 1})" ${st.page === totalPages ? 'disabled' : ''}>›</button>`;
+    h += `<span class="pg-info">Page ${st.page}/${totalPages}</span>`;
+    el.innerHTML = h;
+}
+
+function goPage(p) {
+    const pp = st.perPage || filtered.length;
+    const max = Math.max(1, Math.ceil(filtered.length / pp));
+    if (p < 1 || p > max) return;
+    st.page = p;
+    render();
+    $('tab-browse').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ═══ VIEW ═══ */
+function setView(v) {
+    st.view = v;
+    $('gridView').classList.toggle('hidden', v !== 'grid');
+    $('tableView').classList.toggle('hidden', v !== 'table');
+    $('vGrid').classList.toggle('active', v === 'grid');
+    $('vTable').classList.toggle('active', v === 'table');
+    render();
+}
+
+function toggleSortDir() {
+    st.sortAsc = !st.sortAsc;
+    $('sortDirBtn').textContent = st.sortAsc ? '↑' : '↓';
+    applyFilters();
+}
+
+function colSort(key) {
+    if (st.sort === key) st.sortAsc = !st.sortAsc;
+    else { st.sort = key; st.sortAsc = key === 'value' ? false : true; }
+    document.querySelectorAll('#sortBtns .btn').forEach(b => b.classList.toggle('active', b.dataset.sort === st.sort));
+    $('sortDirBtn').textContent = st.sortAsc ? '↑' : '↓';
+    applyFilters();
+}
+
+/* ═══ TABS ═══ */
+function switchTab(t) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + t));
+}
+
+/* ═══ LIGHTBOX ═══ */
+function openLightbox(src) { $('lbImg').src = src; $('lightbox').classList.add('on'); document.body.style.overflow = 'hidden'; }
+function closeLightbox() { $('lightbox').classList.remove('on'); document.body.style.overflow = ''; }
+
+/* ═══ RANDOM ═══ */
+function openRandom() { $('rndModal').classList.add('on'); document.body.style.overflow = 'hidden'; spinRandom(); }
+function closeRandom() { $('rndModal').classList.remove('on'); document.body.style.overflow = ''; }
+function spinRandom() {
+    const pool = filtered.length && filtered.length < records.length ? filtered : records;
+    const r = pool[Math.floor(Math.random() * pool.length)];
+    $('rndImg').innerHTML = r.image ? `<img src="${esc(r.image)}" alt="${esc(r.album)}">` : '<div class="no-img">🎵</div>';
+    $('rndArtist').textContent = r.artist;
+    $('rndAlbum').textContent = r.album;
+    $('rndDetail').textContent = `${r.year || 'Unknown'} · ${r.label || ''}`;
+    $('rndFact').textContent = r.interestingFact || '';
+    $('rndFact').style.display = r.interestingFact ? 'block' : 'none';
+    $('rndVal').textContent = r.value2025 ? `Est. 2025: ${r.value2025}` : '';
+    $('rndScope').textContent = pool.length < records.length ? `Picking from ${pool.length} filtered records` : `Picking from all ${records.length} records`;
+}
+
+/* ═══ CSV ═══ */
+function exportCSV() {
+    const h = ['Artist','Album','Year','Label','Pressing','Chart Position','Value 1980','Value 2000','Value 2025','Interesting Fact'];
+    const q = v => `"${String(v || '').replace(/"/g, '""')}"`;
+    const rows = filtered.map(r => [r.artist,r.album,r.year,r.label,r.pressing,r.chartPosition,r.value1980,r.value2000,r.value2025,r.interestingFact].map(q).join(','));
+    const blob = new Blob(['\uFEFF' + [h.join(','), ...rows].join('\n')], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = 'freds-vinyl-vault.csv'; a.click();
+}
+
+/* ═══ ANALYTICS ═══ */
+function renderAnalytics() {
+    const g = $('aGrid');
+
+    // Decade distribution
+    const decades = {};
+    records.forEach(r => {
+        if (!r.year) return;
+        let d = r.year < 1960 ? 'Pre-60s' : r.year < 1970 ? '1960s' : r.year < 1980 ? '1970s' : r.year < 1990 ? '1980s' : '1990s+';
+        decades[d] = (decades[d] || 0) + 1;
+    });
+    const decOrd = ['Pre-60s','1960s','1970s','1980s','1990s+'];
+    const decClr = ['#8b6cc7','#5889cc','#c9a84c','#bf4b53','#4aad78'];
+    const maxDec = Math.max(...Object.values(decades));
+
+    // Decade value
+    const decVals = {};
+    records.forEach(r => {
+        if (!r.year) return;
+        let d = r.year < 1960 ? 'Pre-60s' : r.year < 1970 ? '1960s' : r.year < 1980 ? '1970s' : r.year < 1990 ? '1980s' : '1990s+';
+        decVals[d] = (decVals[d] || 0) + (r.value2025Num || 0);
+    });
+    const maxDecVal = Math.max(...Object.values(decVals));
+
+    // Artists
+    const aCounts = {}, aVals = {};
+    records.forEach(r => {
+        aCounts[r.artist] = (aCounts[r.artist] || 0) + 1;
+        aVals[r.artist] = (aVals[r.artist] || 0) + (r.value2025Num || 0);
+    });
+    const topArtists = Object.entries(aCounts).sort((a,b) => b[1]-a[1]).slice(0,10);
+    const topValArtists = Object.entries(aVals).sort((a,b) => b[1]-a[1]).slice(0,10);
+
+    // Top records
+    const topRecs = [...records].sort((a,b) => (b.value2025Num||0) - (a.value2025Num||0)).slice(0,10);
+
+    // Labels
+    const lCounts = {};
+    records.forEach(r => {
+        if (!r.label) return;
+        const l = r.label.replace(/\s*\(.*?\)/,'').trim();
+        lCounts[l] = (lCounts[l] || 0) + 1;
+    });
+    const topLabels = Object.entries(lCounts).sort((a,b) => b[1]-a[1]).slice(0,10);
+
+    // Value over time using midpoint of ranges
+    const v80 = records.reduce((s,r) => s + parseMidValue(r.value1980), 0);
+    const v00 = records.reduce((s,r) => s + parseMidValue(r.value2000), 0);
+    const v25 = records.reduce((s,r) => s + (r.value2025Num || 0), 0);
+
+    g.innerHTML = `
+        <div class="a-card"><h3>📊 Records by Decade</h3><div class="bars">
+            ${decOrd.map((d,i) => { const c = decades[d]||0; return `<div class="bar-r"><div class="bar-l">${d}</div><div class="bar-t"><div class="bar-f" style="width:${(c/maxDec*100).toFixed(1)}%;background:${decClr[i]}">${c}</div></div><div class="bar-v">${(c/records.length*100).toFixed(0)}%</div></div>`; }).join('')}
+        </div></div>
+
+        <div class="a-card"><h3>💵 Value by Decade</h3><div class="bars">
+            ${decOrd.map((d,i) => { const v = decVals[d]||0; return `<div class="bar-r"><div class="bar-l">${d}</div><div class="bar-t"><div class="bar-f" style="width:${(v/maxDecVal*100).toFixed(1)}%;background:${decClr[i]}">$${v.toLocaleString()}</div></div><div class="bar-v">${(v/v25*100).toFixed(0)}%</div></div>`; }).join('')}
+        </div></div>
+
+        <div class="a-card"><h3>📈 Value Over Time (est. midpoint)</h3><div class="bars">
+            ${[{l:'~1980',v:v80,c:'var(--purple)'},{l:'~2000',v:v00,c:'var(--blue)'},{l:'2025',v:v25,c:'var(--green)'}].map(({l,v,c}) => `<div class="bar-r"><div class="bar-l">${l}</div><div class="bar-t"><div class="bar-f" style="width:${(v/v25*100).toFixed(1)}%;background:${c}">$${v.toLocaleString()}</div></div><div class="bar-v"></div></div>`).join('')}
+        </div>
+        <div style="margin-top:14px;font-size:0.82rem;color:var(--text-3)">
+            Since ~1980: <span style="color:var(--green);font-weight:600">+${((v25/v80-1)*100).toFixed(0)}%</span>
+            &nbsp;·&nbsp; Since ~2000: <span style="color:var(--green);font-weight:600">+${((v25/v00-1)*100).toFixed(0)}%</span>
+        </div></div>
+
+        <div class="a-card"><h3>🎤 Top Artists by Count</h3><div class="tl">
+            ${topArtists.map(([a,c],i) => `<div class="tl-i clickable" onclick="qfArtist('${a.replace(/'/g,"\\'")}')"><div class="tl-r ${i<3?'gld':''}">${i+1}</div><div class="tl-info"><div class="tl-name">${esc(a)}</div></div><div class="tl-val cnt">${c} albums</div></div>`).join('')}
+        </div></div>
+
+        <div class="a-card"><h3>💰 Top Artists by Value</h3><div class="tl">
+            ${topValArtists.map(([a,v],i) => `<div class="tl-i clickable" onclick="qfArtist('${a.replace(/'/g,"\\'")}')"><div class="tl-r ${i<3?'gld':''}">${i+1}</div><div class="tl-info"><div class="tl-name">${esc(a)}</div><div class="tl-sub">${aCounts[a]} albums · $${Math.round(v/aCounts[a])} avg</div></div><div class="tl-val">$${v.toLocaleString()}</div></div>`).join('')}
+        </div></div>
+
+        <div class="a-card"><h3>💎 Most Valuable Records</h3><div class="tl">
+            ${topRecs.map((r,i) => `<div class="tl-i"><div class="tl-r ${i<3?'gld':''}">${i+1}</div><div class="tl-info"><div class="tl-name">${esc(r.artist)} — ${esc(r.album)}</div><div class="tl-sub">${r.year||''} · ${esc(r.label||'')}</div></div><div class="tl-val">$${r.value2025Num}</div></div>`).join('')}
+        </div></div>
+
+        <div class="a-card"><h3>🏷️ Top Labels</h3><div class="tl">
+            ${topLabels.map(([l,c],i) => `<div class="tl-i"><div class="tl-r ${i<3?'gld':''}">${i+1}</div><div class="tl-info"><div class="tl-name">${esc(l)}</div></div><div class="tl-val cnt">${c}</div></div>`).join('')}
+        </div></div>
+
+        <div class="a-card"><h3>🎹 Pressing Types</h3><div class="bars">
+            ${(() => {
+                const pc = {};
+                records.forEach(r => { const t = getPressingType(r.pressing); pc[t] = (pc[t]||0)+1; });
+                const order = ['original','reissue','compilation','other'];
+                const labels = {original:'Original US',reissue:'Reissue',compilation:'Compilation',other:'Other'};
+                const colors = ['#c9a84c','#5889cc','#8b6cc7','#5f5a68'];
+                const mx = Math.max(...Object.values(pc));
+                return order.map((k,i) => { const c = pc[k]||0; return `<div class="bar-r"><div class="bar-l">${labels[k]}</div><div class="bar-t"><div class="bar-f" style="width:${(c/mx*100).toFixed(1)}%;background:${colors[i]}">${c}</div></div><div class="bar-v">${(c/records.length*100).toFixed(0)}%</div></div>`; }).join('');
+            })()}
+        </div></div>
+    `;
+}
+
+function qfArtist(a) {
+    $('artistBox').value = a; st.artist = a;
+    switchTab('browse'); applyFilters();
+}
+
+init();
+</script>
 </body>
 </html>
