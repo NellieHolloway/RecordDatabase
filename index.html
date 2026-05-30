@@ -535,7 +535,7 @@
         <div class="stats-bar">
             <div class="stat"><div class="stat-val" id="stTotal">0</div><div class="stat-lbl">Records</div><div class="stat-note" id="stTotalNote"></div></div>
             <div class="stat"><div class="stat-val" id="stArtists">0</div><div class="stat-lbl">Artists</div></div>
-            <div class="stat"><div class="stat-val" id="stValue">$0</div><div class="stat-lbl">Est. Value</div></div>
+            <div class="stat"><div class="stat-val" id="stValue">$0</div><div class="stat-lbl">Est. Value</div><div class="stat-note" id="stValueNote"></div></div>
             <div class="stat"><div class="stat-val" id="stAvg">$0</div><div class="stat-lbl">Avg / Record</div></div>
             <div class="stat"><div class="stat-val" id="stYears">—</div><div class="stat-lbl">Year Span</div></div>
         </div>
@@ -598,6 +598,16 @@
                 <option value="0">All</option>
             </select>
         </div>
+        <div class="ctrl-group">
+            <span class="ctrl-lbl" title="Estimated values are baselined at Near Mint. Choose a grade to re-value the collection.">Grade</span>
+            <select id="condSelect" class="pp-select" aria-label="Media condition grade for valuation">
+                <option value="M">Mint (M)</option>
+                <option value="NM" selected>Near Mint (NM)</option>
+                <option value="VG+">Very Good+ (VG+)</option>
+                <option value="VG">Very Good (VG)</option>
+                <option value="G">Good (G)</option>
+            </select>
+        </div>
         <button class="act-btn" id="favToggleBtn" onclick="toggleFavsOnly()" title="Show only favorites" aria-pressed="false">⭐ Favorites <span id="favCount" style="opacity:0.7"></span></button>
         <button class="act-btn" onclick="openRandom()" aria-label="Open random record picker">🎲 Random</button>
         <button class="act-btn" onclick="exportCSV()" aria-label="Export current view as CSV">📥 CSV</button>
@@ -625,9 +635,9 @@
 <div class="tab-panel" id="tab-info">
     <div class="info-grid">
         <div class="info-s"><h3>🏆 Collection Highlights</h3><ul>
-            <li><span class="hl">775 vinyl records</span> spanning 1957–2024</li>
-            <li>Peak era: <span class="hl">459 albums from the 1970s</span> (60% of collection)</li>
-            <li>Estimated total value: <span class="hl">$25,000–$40,000</span></li>
+            <li><span class="hl" id="abTotal">—</span> spanning <span id="abSpan">—</span></li>
+            <li>Peak era: <span class="hl">the 1970s</span>, the core of the collection</li>
+            <li>Estimated total value: <span class="hl" id="abValue">—</span> <span id="abValueGrade" style="color:var(--text-3);font-weight:400"></span></li>
             <li>Focus on <span class="hl">original US pressings</span> from major labels</li>
             <li>Includes <span class="hl">rare bootlegs</span> and promotional items</li>
         </ul></div>
@@ -638,13 +648,7 @@
             <li><span class="a-badge">The Who</span> 19 albums — complete studio + live catalog</li>
             <li><span class="a-badge">David Bowie</span> 17 albums — complete 1969–1984 era</li>
         </ul></div>
-        <div class="info-s"><h3>💰 Most Valuable Records</h3><ul>
-            <li>The Who — <em>My Generation</em> (1965) — <span class="hl v-badge">$160</span></li>
-            <li>Bob Dylan — <em>Bob Dylan</em> (1962) — <span class="hl v-badge">$150</span></li>
-            <li>Atlantic R&B Box Set (14LP) — <span class="hl v-badge">$137</span></li>
-            <li>Bob Dylan — <em>Blonde on Blonde</em> — <span class="hl v-badge">$130</span></li>
-            <li>Buckingham Nicks (pre-Fleetwood Mac) — <span class="hl v-badge">$115</span></li>
-        </ul></div>
+        <div class="info-s"><h3>💰 Most Valuable Records</h3><ul id="abTop"></ul></div>
         <div class="info-s"><h3>🎸 Notable Artist Runs</h3><ul>
             <li><span class="a-badge">Bruce Springsteen</span> 12 albums including rare promo box</li>
             <li><span class="a-badge">Rod Stewart</span> 12 albums — Faces era through solo peak</li>
@@ -663,14 +667,24 @@
             </ul>
         </div>
         <div class="info-s"><h3>📦 Premium Set Values</h3>
-            <p>These artist collections command premium prices when sold together:</p>
+            <p>Rough estimates for these artist runs sold together, at Near Mint:</p>
             <ul>
-                <li>Complete Led Zeppelin (9 LPs): <span class="hl">$400–600</span></li>
-                <li>Beatles US Capitol Collection: <span class="hl">$600–900</span></li>
-                <li>Rolling Stones 1964–1972: <span class="hl">$500–800</span></li>
-                <li>The Who Complete: <span class="hl">$450–700</span></li>
-                <li>David Bowie 70s Run: <span class="hl">$350–500</span></li>
+                <li>Complete Led Zeppelin (9 LPs): <span class="hl">$180–280</span></li>
+                <li>Beatles US Capitol Collection: <span class="hl">$280–450</span></li>
+                <li>Rolling Stones 1964–1972: <span class="hl">$240–400</span></li>
+                <li>The Who Complete: <span class="hl">$200–340</span></li>
+                <li>David Bowie 70s Run: <span class="hl">$160–260</span></li>
             </ul>
+        </div>
+        <div class="info-s"><h3>📐 How Values Are Estimated</h3>
+            <p>Figures are <span class="hl">model estimates, not appraisals</span> — a starting point, not a substitute for checking a specific pressing.</p>
+            <ul>
+                <li>Baselined at <strong>Near Mint</strong>; use the <strong>Grade</strong> selector to re-value the whole collection for your copies' condition.</li>
+                <li>Calibrated against 2025 Discogs/eBay sold medians for a sample spanning every tier.</li>
+                <li>Driven by era, pressing type, format (multi-LP sets), and per-title demand — with the <strong>mega-seller effect</strong> applied (blockbusters like <em>Rumours</em> or <em>Thriller</em> are common, so they stay modest).</li>
+                <li>Genuine rarities (early-60s originals, box sets) carry the top of the range.</li>
+            </ul>
+            <p style="font-size:0.78rem;color:var(--text-3)">Last recalibrated May 2026. For a real sale price, check the exact pressing's recent sold listings.</p>
         </div>
     </div>
 </div>
@@ -775,6 +789,37 @@ function updateFavCountUI() {
     $('favCount').textContent = n ? `(${n})` : '';
 }
 
+/* ═══ CONDITION GRADING ═══
+   Stored value2025Num figures are baselined at Near Mint (NM). Real-world
+   prices scale with media grade, so this lets the whole collection be
+   re-valued at any grade. Multipliers reflect typical Goldmine/Discogs spreads. */
+const COND = [
+    { k: 'M',   label: 'Mint',       mult: 1.25 },
+    { k: 'NM',  label: 'Near Mint',  mult: 1.00 },
+    { k: 'VG+', label: 'Very Good+', mult: 0.70 },
+    { k: 'VG',  label: 'Very Good',  mult: 0.45 },
+    { k: 'G',   label: 'Good',       mult: 0.25 },
+];
+const COND_KEY = 'vinylVault.cond.v1';
+let condKey = 'NM';
+try { const s = localStorage.getItem(COND_KEY); if (s && COND.some(c => c.k === s)) condKey = s; } catch (e) {}
+function condMult() { return (COND.find(c => c.k === condKey) || { mult: 1 }).mult; }
+const adj = n => (n || 0) * condMult();
+const adjRound = n => Math.round(adj(n));
+function valRange(num) { const m = adj(num); let a = Math.max(1, Math.round(m * 0.72)), b = Math.max(a + 1, Math.round(m * 1.35)); return '$' + a + '-' + b; }
+function setCondition(k) {
+    if (!COND.some(c => c.k === k)) return;
+    condKey = k;
+    try { localStorage.setItem(COND_KEY, k); } catch (e) {}
+    refreshValues();
+}
+function refreshValues() {
+    updateStats();
+    render();
+    renderAnalytics();
+    refreshAbout();
+}
+
 /* ═══ STATE ═══ */
 let st = {
     search: '', yearMin: '', yearMax: '', artist: '', pressing: '', favsOnly: false,
@@ -842,6 +887,9 @@ function init() {
     $('artistBox').addEventListener('change', e => { st.artist = e.target.value; applyFilters(); });
     $('pressingBox').addEventListener('change', e => { st.pressing = e.target.value; applyFilters(); });
     $('ppSelect').addEventListener('change', e => { st.perPage = parseInt(e.target.value) || 0; st.page = 1; writeUrlState(); render(); });
+    $('condSelect').value = condKey;
+    $('condSelect').addEventListener('change', e => setCondition(e.target.value));
+    refreshAbout();
     $('rndModal').addEventListener('click', closeRandom);
 
     document.querySelectorAll('#sortBtns .btn').forEach(b => b.addEventListener('click', () => {
@@ -931,14 +979,16 @@ function updateStats() {
     const isFiltered = filtered.length !== records.length;
     const artists = new Set(src.map(r => r.artist));
     const years = src.map(r => r.year).filter(Boolean);
-    const total = src.reduce((s, r) => s + (r.value2025Num || 0), 0);
+    const total = src.reduce((s, r) => s + adj(r.value2025Num), 0);
 
     $('stTotal').textContent = src.length.toLocaleString();
     $('stTotalNote').textContent = isFiltered ? `of ${records.length}` : '';
     $('stArtists').textContent = artists.size;
-    $('stValue').textContent = '$' + total.toLocaleString();
+    $('stValue').textContent = '$' + Math.round(total).toLocaleString();
     $('stAvg').textContent = src.length ? '$' + Math.round(total / src.length) : '$0';
     $('stYears').textContent = years.length ? Math.min(...years) + '–' + Math.max(...years) : '—';
+    const cn = COND.find(c => c.k === condKey);
+    if ($('stValueNote')) $('stValueNote').textContent = cn ? `at ${cn.k}` : '';
 }
 
 /* ═══ CHIPS ═══ */
@@ -1069,7 +1119,7 @@ function renderGrid(recs, startIdx) {
                 <div class="card-vals">
                     <div class="cv-item"><div class="cv-yr">1980</div><div class="cv-pr">${esc(r.value1980 || '—')}</div></div>
                     <div class="cv-item"><div class="cv-yr">2000</div><div class="cv-pr">${esc(r.value2000 || '—')}</div></div>
-                    <div class="cv-item"><div class="cv-yr">2025</div><div class="cv-pr">${esc(r.value2025 || '—')}</div></div>
+                    <div class="cv-item"><div class="cv-yr">2025</div><div class="cv-pr">${valRange(r.value2025Num)}</div></div>
                 </div>
             </div>
         </article>`;
@@ -1097,7 +1147,7 @@ function renderTable(recs, startIdx) {
         <td class="tc-dim">${highlightMatch(r.label, s) || '—'}</td>
         <td class="tc-dim">${esc(r.pressing || '—')}</td>
         <td class="tc-dim">${esc(r.chartPosition || '—')}</td>
-        <td class="tc-val">${esc(r.value2025 || '—')}</td>
+        <td class="tc-val">${valRange(r.value2025Num)}</td>
         <td class="tc-fact" title="${esc(r.interestingFact || '')}">${esc(r.interestingFact || '—')}</td>
     </tr>`;
     }).join('');
@@ -1255,7 +1305,7 @@ function spinRandom() {
     $('rndDetail').textContent = `${r.year || 'Unknown'} · ${r.label || ''}`;
     $('rndFact').textContent = r.interestingFact || '';
     $('rndFact').style.display = r.interestingFact ? 'block' : 'none';
-    $('rndVal').textContent = r.value2025 ? `Est. 2025: ${r.value2025}` : '';
+    $('rndVal').textContent = r.value2025Num ? `Est. value (${condKey}): ${valRange(r.value2025Num)}` : '';
     $('rndScope').textContent = pool.length < records.length ? `Picking from ${pool.length} filtered records` : `Picking from all ${records.length} records`;
     updateRndFavUI();
 }
@@ -1293,12 +1343,13 @@ function rndViewInBrowse() {
 
 /* ═══ CSV ═══ */
 function exportCSV() {
-    const h = ['Favorite','Artist','Album','Year','Label','Pressing','Chart Position','Value 1980','Value 2000','Value 2025','Interesting Fact'];
+    const gradeLabel = (COND.find(c => c.k === condKey) || {}).label || condKey;
+    const h = ['Favorite','Artist','Album','Year','Label','Pressing','Chart Position','Value 1980','Value 2000','Value 2025 (NM)',`Value 2025 (${condKey})`,'Interesting Fact'];
     const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
-    const rows = filtered.map(r => [isFav(r) ? 'Yes' : '', r.artist, r.album, r.year, r.label, r.pressing, r.chartPosition, r.value1980, r.value2000, r.value2025, r.interestingFact].map(q).join(','));
+    const rows = filtered.map(r => [isFav(r) ? 'Yes' : '', r.artist, r.album, r.year, r.label, r.pressing, r.chartPosition, r.value1980, r.value2000, r.value2025, valRange(r.value2025Num), r.interestingFact].map(q).join(','));
     const blob = new Blob(['\uFEFF' + [h.join(','), ...rows].join('\n')], { type: 'text/csv;charset=utf-8' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-    a.download = 'freds-vinyl-vault.csv'; a.click();
+    a.download = `freds-vinyl-vault-${condKey.replace('+','plus')}.csv`; a.click();
 }
 
 /* ═══ ANALYTICS ═══ */
@@ -1321,7 +1372,7 @@ function renderAnalytics() {
     records.forEach(r => {
         if (!r.year) return;
         let d = r.year < 1960 ? 'Pre-60s' : r.year < 1970 ? '1960s' : r.year < 1980 ? '1970s' : r.year < 1990 ? '1980s' : '1990s+';
-        decVals[d] = (decVals[d] || 0) + (r.value2025Num || 0);
+        decVals[d] = (decVals[d] || 0) + adj(r.value2025Num);
     });
     const maxDecVal = Math.max(...Object.values(decVals));
 
@@ -1329,7 +1380,7 @@ function renderAnalytics() {
     const aCounts = {}, aVals = {};
     records.forEach(r => {
         aCounts[r.artist] = (aCounts[r.artist] || 0) + 1;
-        aVals[r.artist] = (aVals[r.artist] || 0) + (r.value2025Num || 0);
+        aVals[r.artist] = (aVals[r.artist] || 0) + adj(r.value2025Num);
     });
     const topArtists = Object.entries(aCounts).sort((a,b) => b[1]-a[1]).slice(0,10);
     const topValArtists = Object.entries(aVals).sort((a,b) => b[1]-a[1]).slice(0,10);
@@ -1349,7 +1400,7 @@ function renderAnalytics() {
     // Value over time using midpoint of ranges
     const v80 = records.reduce((s,r) => s + parseMidValue(r.value1980), 0);
     const v00 = records.reduce((s,r) => s + parseMidValue(r.value2000), 0);
-    const v25 = records.reduce((s,r) => s + (r.value2025Num || 0), 0);
+    const v25 = records.reduce((s,r) => s + adj(r.value2025Num), 0);
 
     // Year histogram (one bar per year, compact)
     const yearCounts = {};
@@ -1362,8 +1413,8 @@ function renderAnalytics() {
     const gainers = records
         .map(r => {
             const v80 = parseMidValue(r.value1980);
-            const v25 = r.value2025Num || 0;
-            return v80 > 0 && v25 > 0 ? { r, mult: v25 / v80, v80, v25 } : null;
+            const v25 = adj(r.value2025Num);
+            return v80 > 0 && v25 > 0 ? { r, mult: v25 / v80, v80, v25: Math.round(v25) } : null;
         })
         .filter(Boolean)
         .sort((a,b) => b.mult - a.mult)
@@ -1391,11 +1442,11 @@ function renderAnalytics() {
         </div>
 
         <div class="a-card"><h3>💵 Value by Decade</h3><div class="bars">
-            ${decOrd.map((d,i) => { const v = decVals[d]||0; return `<div class="bar-r"><div class="bar-l">${d}</div><div class="bar-t"><div class="bar-f" style="width:${(v/maxDecVal*100).toFixed(1)}%;background:${decClr[i]}">$${v.toLocaleString()}</div></div><div class="bar-v">${(v/v25*100).toFixed(0)}%</div></div>`; }).join('')}
+            ${decOrd.map((d,i) => { const v = decVals[d]||0; return `<div class="bar-r"><div class="bar-l">${d}</div><div class="bar-t"><div class="bar-f" style="width:${(v/maxDecVal*100).toFixed(1)}%;background:${decClr[i]}">$${Math.round(v).toLocaleString()}</div></div><div class="bar-v">${(v/v25*100).toFixed(0)}%</div></div>`; }).join('')}
         </div></div>
 
         <div class="a-card"><h3>📈 Value Over Time (est. midpoint)</h3><div class="bars">
-            ${[{l:'~1980',v:v80,c:'var(--purple)'},{l:'~2000',v:v00,c:'var(--blue)'},{l:'2025',v:v25,c:'var(--green)'}].map(({l,v,c}) => `<div class="bar-r"><div class="bar-l">${l}</div><div class="bar-t"><div class="bar-f" style="width:${(v/v25*100).toFixed(1)}%;background:${c}">$${v.toLocaleString()}</div></div><div class="bar-v"></div></div>`).join('')}
+            ${[{l:'~1980',v:v80,c:'var(--purple)'},{l:'~2000',v:v00,c:'var(--blue)'},{l:'2025',v:v25,c:'var(--green)'}].map(({l,v,c}) => `<div class="bar-r"><div class="bar-l">${l}</div><div class="bar-t"><div class="bar-f" style="width:${(v/v25*100).toFixed(1)}%;background:${c}">$${Math.round(v).toLocaleString()}</div></div><div class="bar-v"></div></div>`).join('')}
         </div>
         <div style="margin-top:14px;font-size:0.82rem;color:var(--text-3)">
             Since ~1980: <span style="color:var(--green);font-weight:600">+${((v25/v80-1)*100).toFixed(0)}%</span>
@@ -1415,7 +1466,7 @@ function renderAnalytics() {
         </div></div>
 
         <div class="a-card"><h3>💎 Most Valuable Records</h3><div class="tl">
-            ${topRecs.map((r,i) => `<div class="tl-i"><div class="tl-r ${i<3?'gld':''}">${i+1}</div><div class="tl-info"><div class="tl-name">${esc(r.artist)} — ${esc(r.album)}</div><div class="tl-sub">${r.year||''} · ${esc(r.label||'')}</div></div><div class="tl-val">$${r.value2025Num}</div></div>`).join('')}
+            ${topRecs.map((r,i) => `<div class="tl-i"><div class="tl-r ${i<3?'gld':''}">${i+1}</div><div class="tl-info"><div class="tl-name">${esc(r.artist)} — ${esc(r.album)}</div><div class="tl-sub">${r.year||''} · ${esc(r.label||'')}</div></div><div class="tl-val">$${adjRound(r.value2025Num)}</div></div>`).join('')}
         </div></div>
 
         <div class="a-card"><h3>🏷️ Top Labels</h3><div class="tl">
@@ -1434,6 +1485,26 @@ function renderAnalytics() {
             })()}
         </div></div>
     `;
+}
+
+function refreshAbout() {
+    const span = (() => {
+        const ys = records.map(r => r.year).filter(Boolean);
+        return ys.length ? Math.min(...ys) + '–' + Math.max(...ys) : '—';
+    })();
+    const total = records.reduce((s, r) => s + adj(r.value2025Num), 0);
+    const cn = COND.find(c => c.k === condKey);
+    if ($('abTotal')) $('abTotal').textContent = records.length.toLocaleString() + ' vinyl records';
+    if ($('abSpan')) $('abSpan').textContent = span;
+    if ($('abValue')) $('abValue').textContent = '$' + Math.round(total).toLocaleString();
+    if ($('abValueGrade')) $('abValueGrade').textContent = cn ? `(at ${cn.label})` : '';
+    const top = $('abTop');
+    if (top) {
+        const recs = [...records].sort((a, b) => (b.value2025Num || 0) - (a.value2025Num || 0)).slice(0, 5);
+        top.innerHTML = recs.map(r =>
+            `<li>${esc(r.artist)} — <em>${esc(r.album)}</em> (${r.year || '—'}) — <span class="hl v-badge">$${adjRound(r.value2025Num)}</span></li>`
+        ).join('');
+    }
 }
 
 function qfArtist(a) {
