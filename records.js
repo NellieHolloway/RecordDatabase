@@ -1,5 +1,13 @@
 // Record Collection Database - Fred's Vinyl Vault
-// Total Records: 781
+// Total Records: 783
+
+// Added September 29, 2026: two albums identified from the supplied cover photos.
+// Catalog numbers identify the sleeve edition; labels/runouts are needed to confirm the pressing.
+// New records use "Not assessed" / null for unverified values, never a fabricated price.
+// Sources: https://www.onamrecords.com/artists/nils-lofgren/discography/united-states/a-m-records/sp-3707/night-after-night
+// https://johnnycash.shop.musictoday.com/product/Y4LPJC008/johnny-cashs-greatest-hits-volume-i-vinyl
+// https://jazzdiscography.com/Artists/johnny-cash/johnny-cash-lp-releases.php
+// https://en.wikipedia.org/wiki/Greatest_Hits,_Vol._1_(Johnny_Cash_album)
 
 var records = [
     { artist: "ABBA", album: "Greatest Hits", year: 1976, label: "Atlantic (SD 18189)", pressing: "Original US pressing", chartPosition: "#48 Billboard 200", interestingFact: "SOS, Waterloo, Mamma Mia, Fernando. First US hits compilation. Park bench cover.", value1980: "$2-3", value2000: "$4-8", value2025: "$8-15", value2025Num: 11, image: "images/PXL_20260112_184459989.MP~2.jpg" },
@@ -797,4 +805,6 @@ var records = [
     { artist: "Traffic", album: "Last Exit", year: 1969, label: "United Artists (UAS 6702)", pressing: "Original US pressing", chartPosition: "N/A", interestingFact: "Third Traffic studio album, released after the band's initial breakup, combining leftover studio tracks (Shanghai Noodle Factory, Medicated Goo) with live Fillmore West recordings. Title character die-cut cover reveals band photo underneath.", value1980: "$2-4", value2000: "$5-9", value2025: "$8-15", value2025Num: 11, image: "images/traffic-last-exit.jpg" },
     { artist: "The Smiths", album: "The Queen Is Dead", year: 1986, label: "Sire (9 25426-1)", pressing: "Original US pressing", chartPosition: "#70 Billboard 200", interestingFact: "Third studio album, widely regarded as the band's masterpiece and later named NME's greatest album of all time. Title borrowed from Hubert Selby Jr.'s novel Last Exit to Brooklyn. Cover star is French actor Alain Delon, from the 1964 film L'Insoumis.", value1980: "N/A", value2000: "$8-15", value2025: "$18-32", value2025Num: 25, image: "images/PXL_20260704_163906059.jpg" },
     { artist: "Why Cry", album: "How Now", year: 2026, label: "Self-released", pressing: "Original US pressing", chartPosition: "Did not chart", interestingFact: "Debut album from Minneapolis duo Dan Dukich and Chelsie Newhard, formed 2025, blending Americana, folk hymns, and torch songs recorded live over a single week. Hand-drawn, illustrated cover.", value1980: "N/A", value2000: "N/A", value2025: "$10-20", value2025Num: 15, image: "images/PXL_20260704_164023148.jpg" },
+    { artist: "Nils Lofgren", album: "Night After Night", year: 1977, label: "A&M (SP-3707)", pressing: "US 2LP edition; exact pressing unconfirmed", chartPosition: "#44 Billboard 200", interestingFact: "Double live album featuring Back It Up, Keith Don't Go, Cry Tough and I Came to Dance. Gatefold sleeve; SP-3707 is visible on the supplied cover. Exact pressing and media condition require label/runout inspection.", value1980: "Not assessed", value2000: "Not assessed", value2025: "Not assessed", value2025Num: null, image: "images/nils-lofgren-night-after-night.jpg" },
+    { artist: "Johnny Cash", album: "Johnny Cash's Greatest Hits, Volume 1", year: 1967, label: "Columbia (CS 9478)", pressing: "US stereo compilation; exact pressing unconfirmed", chartPosition: "#82 Billboard 200; #1 Country", interestingFact: "Eleven-song compilation including Jackson with June Carter, Ring of Fire and the Columbia re-recording of I Walk the Line. Supplied sleeve shows Stereo 360 Sound and CS 9478; CL 2678 is the mono catalog number also printed on the sleeve. Exact pressing requires label/runout inspection.", value1980: "Not assessed", value2000: "Not assessed", value2025: "Not assessed", value2025Num: null, image: "images/johnny-cash-greatest-hits-volume-1.jpg" },
 ];

@@ -469,7 +469,21 @@
         .year-range .year-input { width: 72px; }
         .year-range .sep { color: var(--text-3); font-size: 0.78rem; }
 
-        /* ═══ SHORTCUTS MODAL ═══ */
+        /* Dialogs retain keyboard focus and return it to the opener. */
+let dialogOpener = null;
+function showDialog(id) {
+    dialogOpener = document.activeElement;
+    $(id).classList.add('on');
+    document.body.style.overflow = 'hidden';
+    $(id).querySelector('button').focus();
+}
+function hideDialog(id) {
+    $(id).classList.remove('on');
+    document.body.style.overflow = '';
+    if (dialogOpener && dialogOpener.isConnected) dialogOpener.focus();
+}
+
+/* ═══ SHORTCUTS MODAL ═══ */
         .shortcuts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 18px; text-align: left; margin: 14px 0 6px; }
         .shortcuts-grid .sc-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 2px; border-bottom: 1px solid var(--border-2); font-size: 0.84rem; }
         .shortcuts-grid .sc-row:last-child, .shortcuts-grid .sc-row:nth-last-child(2) { border-bottom: none; }
@@ -524,6 +538,20 @@
             .controls.collapsed > :not(.search-wrap):not(.filter-toggle):not(.results-ct) { display: none; }
             .shortcuts-grid { grid-template-columns: 1fr; }
         }
+        /* Readable muted labels, keyboard focus, and reduced motion. */
+        :root { --text-3: #a39bac; }
+        :focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+        .lb-close { background: transparent; border: 0; cursor: pointer; }
+        .card-meta, .card-fact { overflow-wrap: anywhere; }
+        .card-vals .cv-pr { font-size: .85rem; }
+        button:disabled { opacity: .5; cursor: default; }
+        @media (max-width: 600px) {
+            .controls > select, .search-wrap { max-width: 100%; min-width: 0; }
+            .tab-btn { padding: 9px 10px; font-size: .78rem; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+        }
     </style>
 </head>
 <body>
@@ -536,7 +564,7 @@
             <div class="stat"><div class="stat-val" id="stTotal">0</div><div class="stat-lbl">Records</div><div class="stat-note" id="stTotalNote"></div></div>
             <div class="stat"><div class="stat-val" id="stArtists">0</div><div class="stat-lbl">Artists</div></div>
             <div class="stat"><div class="stat-val" id="stValue">$0</div><div class="stat-lbl">Est. Value</div><div class="stat-note" id="stValueNote"></div></div>
-            <div class="stat"><div class="stat-val" id="stAvg">$0</div><div class="stat-lbl">Avg / Record</div></div>
+            <div class="stat"><div class="stat-val" id="stAvg">$0</div><div class="stat-lbl">Avg / Valued Record</div></div>
             <div class="stat"><div class="stat-val" id="stYears">—</div><div class="stat-lbl">Year Span</div></div>
         </div>
     </div>
@@ -556,7 +584,7 @@
         </button>
         <div class="search-wrap">
             <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-            <input type="text" id="searchBox" class="search-input" placeholder="Search artist, album, label, fact..." aria-label="Search records">
+            <input type="text" id="searchBox" class="search-input" placeholder="Search any words: artist, album, year..." aria-label="Search records">
             <span class="sr-only" id="searchHint">Press slash to focus search</span>
         </div>
         <div class="year-range" role="group" aria-label="Year range filter">
@@ -641,21 +669,12 @@
             <li>Focus on <span class="hl">original US pressings</span> from major labels</li>
             <li>Includes <span class="hl">rare bootlegs</span> and promotional items</li>
         </ul></div>
-        <div class="info-s"><h3>💎 Complete/Near-Complete Discographies</h3><ul>
-            <li><span class="a-badge">Led Zeppelin</span> Complete studio discography (9 albums)</li>
-            <li><span class="a-badge">The Rolling Stones</span> 29 albums including bootlegs — near complete 1964–1986</li>
-            <li><span class="a-badge">The Beatles</span> 21 albums — complete US Capitol/Apple releases</li>
-            <li><span class="a-badge">The Who</span> 19 albums — complete studio + live catalog</li>
-            <li><span class="a-badge">David Bowie</span> 17 albums — complete 1969–1984 era</li>
-        </ul></div>
+        <div class="info-s"><h3>💎 Largest Artist Collections</h3><ul id="abArtists"></ul></div>
         <div class="info-s"><h3>💰 Most Valuable Records</h3><ul id="abTop"></ul></div>
-        <div class="info-s"><h3>🎸 Notable Artist Runs</h3><ul>
-            <li><span class="a-badge">Bruce Springsteen</span> 12 albums including rare promo box</li>
-            <li><span class="a-badge">Rod Stewart</span> 12 albums — Faces era through solo peak</li>
-            <li><span class="a-badge">Bob Dylan</span> 11 albums — complete Columbia 60s catalog</li>
-            <li><span class="a-badge">The Kinks</span> 10 albums — British Invasion essentials</li>
-            <li><span class="a-badge">Eric Clapton</span> 8 albums — solo + Derek & the Dominos</li>
-        </ul></div>
+        <div class="info-s"><h3>🆕 Added September 29, 2026</h3><ul>
+            <li>Nils Lofgren — <em>Night After Night</em> (1977), A&amp;M SP-3707, 2LP.</li>
+            <li>Johnny Cash — <em>Greatest Hits, Volume 1</em> (1967), Columbia CS 9478, stereo.</li>
+        </ul><p>Identified from the supplied sleeves. Exact pressings need label and runout photos; values for these two copies are not assessed.</p></div>
         <div class="info-s"><h3>🌟 Themes</h3>
             <p>This collection represents a <span class="hl">carefully curated journey through rock history</span>, with particular strength in:</p>
             <ul>
@@ -666,31 +685,22 @@
                 <li><strong>Pete Townshend Archive:</strong> 7 solo albums + 19 Who albums</li>
             </ul>
         </div>
-        <div class="info-s"><h3>📦 Premium Set Values</h3>
-            <p>Rough estimates for these artist runs sold together, at Near Mint:</p>
-            <ul>
-                <li>Complete Led Zeppelin (9 LPs): <span class="hl">$180–280</span></li>
-                <li>Beatles US Capitol Collection: <span class="hl">$280–450</span></li>
-                <li>Rolling Stones 1964–1972: <span class="hl">$240–400</span></li>
-                <li>The Who Complete: <span class="hl">$200–340</span></li>
-                <li>David Bowie 70s Run: <span class="hl">$160–260</span></li>
-            </ul>
-        </div>
+        <div class="info-s"><h3>🔎 Browsing Tips</h3><p>Combine words across fields, such as <em>Cash Columbia</em> or <em>Lofgren 1977</em>. Searches also match years and chart notes. Favorites stay in this browser. CSV exports all filtered records across every page.</p><p>Copy the address to share your search, sort order, view and page.</p></div>
         <div class="info-s"><h3>📐 How Values Are Estimated</h3>
             <p>Figures are <span class="hl">model estimates, not appraisals</span> — a starting point, not a substitute for checking a specific pressing.</p>
             <ul>
                 <li>Baselined at <strong>Near Mint</strong>; use the <strong>Grade</strong> selector to re-value the whole collection for your copies' condition.</li>
-                <li>Calibrated against 2025 Discogs/eBay sold medians for a sample spanning every tier.</li>
+                <li>Existing estimates were retained from the supplied database; their source sales have not been independently verified in this update.</li>
                 <li>Driven by era, pressing type, format (multi-LP sets), and per-title demand — with the <strong>mega-seller effect</strong> applied (blockbusters like <em>Rumours</em> or <em>Thriller</em> are common, so they stay modest).</li>
                 <li>Genuine rarities (early-60s originals, box sets) carry the top of the range.</li>
             </ul>
-            <p style="font-size:0.78rem;color:var(--text-3)">Last recalibrated May 2026. For a real sale price, check the exact pressing's recent sold listings.</p>
+            <p style="font-size:0.78rem;color:var(--text-3)">The 2025 value fields are retained for compatibility. Unassessed records are excluded from value averages and totals. The grade selector applies a hypothetical collection-wide adjustment, not an inspection of your records.</p>
         </div>
     </div>
 </div>
 
-<div class="lightbox" id="lightbox" onclick="closeLightbox()">
-    <span class="lb-close">&times;</span>
+<div class="lightbox" id="lightbox" role="dialog" aria-label="Album cover" aria-modal="true" onclick="closeLightbox()">
+    <button class="lb-close" onclick="event.stopPropagation();closeLightbox()" aria-label="Close album cover">&times;</button>
     <img id="lbImg" src="" alt="Full size album cover">
 </div>
 
@@ -733,24 +743,41 @@
     </div>
 </div>
 
-<button class="btt" id="btt" onclick="window.scrollTo({top:0})">↑</button>
+<button class="btt" aria-label="Back to top" id="btt" onclick="window.scrollTo({top:0})">↑</button>
 
+<noscript><p style="padding:24px">Enable JavaScript to browse this collection.</p></noscript>
 <script src="records.js"></script>
 <script>
 
 /* ═══ UTILITY ═══ */
 const $ = id => document.getElementById(id);
-const esc = s => { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; };
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const hasValue = r => Number.isFinite(r.value2025Num) && r.value2025Num > 0;
+const searchText = s => String(s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const searchIndex = new Map();
+function imageFallback(img) {
+    const fallback = document.createElement('div');
+    fallback.className = 'no-img';
+    fallback.textContent = '🎵';
+    fallback.setAttribute('aria-label', 'Cover image unavailable');
+    img.replaceWith(fallback);
+}
 
 function debounce(fn, ms) {
     let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
 }
 
 function highlightMatch(text, term) {
-    if (!term || !text) return esc(text || '');
-    const escaped = esc(text);
-    const re = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-    return escaped.replace(re, '<mark>$1</mark>');
+    text = String(text ?? '');
+    if (!term) return esc(text);
+    // Escape each plain-text segment, so matching never splits an HTML entity.
+    const lower = text.toLowerCase(), needle = term.toLowerCase();
+    let result = '', start = 0, at;
+    while ((at = lower.indexOf(needle, start)) !== -1) {
+        result += esc(text.slice(start, at)) + '<mark>' + esc(text.slice(at, at + needle.length)) + '</mark>';
+        start = at + needle.length;
+    }
+    return result + esc(text.slice(start));
 }
 
 function parseMidValue(str) {
@@ -806,7 +833,7 @@ try { const s = localStorage.getItem(COND_KEY); if (s && COND.some(c => c.k === 
 function condMult() { return (COND.find(c => c.k === condKey) || { mult: 1 }).mult; }
 const adj = n => (n || 0) * condMult();
 const adjRound = n => Math.round(adj(n));
-function valRange(num) { const m = adj(num); let a = Math.max(1, Math.round(m * 0.72)), b = Math.max(a + 1, Math.round(m * 1.35)); return '$' + a + '-' + b; }
+function valRange(num) { if (!Number.isFinite(num) || num <= 0) return 'Not assessed'; const m = adj(num); let a = Math.max(1, Math.round(m * 0.72)), b = Math.max(a + 1, Math.round(m * 1.35)); return '$' + a + '-' + b; }
 function setCondition(k) {
     if (!COND.some(c => c.k === k)) return;
     condKey = k;
@@ -846,18 +873,31 @@ const cols = [
 
 /* ═══ INIT ═══ */
 function init() {
+    if (!Array.isArray(window.records)) {
+        $('recordGrid').innerHTML = '<p role="alert">The collection could not load. Keep records.js beside index.html, then reload this page.</p>';
+        return;
+    }
+    records.forEach(r => searchIndex.set(r, searchText([r.artist, r.album, r.year, r.label, r.pressing, r.chartPosition, r.interestingFact].join(' '))));
     buildArtistDropdown();
     buildTableHead();
     updateFavCountUI();
     readUrlState();
-    applyFilters();
+    applyFilters(true);
     renderAnalytics();
 
     window.addEventListener('scroll', () => $('btt').classList.toggle('vis', window.scrollY > 400));
-    window.addEventListener('hashchange', () => { if (!suppressUrl) { readUrlState(); applyFilters(); } });
+    window.addEventListener('hashchange', () => { if (!suppressUrl) { readUrlState(); applyFilters(true); } });
 
     document.addEventListener('keydown', e => {
-        const inField = ['INPUT','SELECT','TEXTAREA'].includes(document.activeElement.tagName);
+        const inField = ['INPUT','SELECT','TEXTAREA'].includes(document.activeElement.tagName) || document.activeElement.isContentEditable;
+        const dialog = document.querySelector('[aria-modal="true"].on');
+        if (dialog && e.key === 'Tab') {
+            const items = [...dialog.querySelectorAll('button:not(:disabled), [tabindex="0"]')];
+            const first = items[0], last = items[items.length - 1];
+            if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+            return;
+        }
         if (e.key === 'Escape') {
             if ($('scModal').classList.contains('on')) closeShortcuts();
             else if ($('rndModal').classList.contains('on')) closeRandom();
@@ -865,6 +905,7 @@ function init() {
             else if (inField) document.activeElement.blur();
             return;
         }
+        if (dialog || e.ctrlKey || e.metaKey || e.altKey) return;
         if (e.key === '/' && !e.ctrlKey && !e.metaKey && !inField) { e.preventDefault(); $('searchBox').focus(); return; }
         if (e.key === '?' && !inField) { e.preventDefault(); openShortcuts(); return; }
         if (!inField) {
@@ -881,6 +922,11 @@ function init() {
         }
     });
 
+    document.addEventListener('keydown', e => {
+        if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[role="button"][tabindex="0"]')) {
+            e.preventDefault(); e.target.click();
+        }
+    });
     $('searchBox').addEventListener('input', debounce(e => { st.search = e.target.value.trim(); applyFilters(); }, 180));
     $('yearMin').addEventListener('input', debounce(e => { st.yearMin = e.target.value; applyFilters(); }, 300));
     $('yearMax').addEventListener('input', debounce(e => { st.yearMax = e.target.value; applyFilters(); }, 300));
@@ -920,24 +966,18 @@ function buildArtistDropdown() {
 function buildTableHead() {
     $('tHead').innerHTML = cols.map(c => {
         if (!c.sortable) return `<th>${c.label}</th>`;
-        return `<th class="${st.sort === c.key ? 'sorted' : ''}" onclick="colSort('${c.key}')">${c.label}<span class="arr">${st.sort === c.key ? (st.sortAsc ? '▲' : '▼') : '·'}</span></th>`;
+        return `<th class="${st.sort === c.key ? 'sorted' : ''}" onclick="colSort('${c.key}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();colSort('${c.key}')}" tabindex="0" aria-sort="${st.sort === c.key ? (st.sortAsc ? 'ascending' : 'descending') : 'none'}">${c.label}<span class="arr">${st.sort === c.key ? (st.sortAsc ? '▲' : '▼') : '·'}</span></th>`;
     }).join('');
 }
 
 /* ═══ FILTERS ═══ */
-function applyFilters() {
-    const s = st.search.toLowerCase();
+function applyFilters(preservePage = false) {
+    const terms = searchText(st.search).split(/\s+/).filter(Boolean);
     const yMin = st.yearMin ? parseInt(st.yearMin) : null;
     const yMax = st.yearMax ? parseInt(st.yearMax) : null;
 
     filtered = records.filter(r => {
-        if (s && !(
-            r.artist.toLowerCase().includes(s) ||
-            r.album.toLowerCase().includes(s) ||
-            (r.label && r.label.toLowerCase().includes(s)) ||
-            (r.interestingFact && r.interestingFact.toLowerCase().includes(s)) ||
-            (r.pressing && r.pressing.toLowerCase().includes(s))
-        )) return false;
+        if (!terms.every(term => searchIndex.get(r).includes(term))) return false;
 
         if (yMin !== null || yMax !== null) {
             if (!r.year) return false;
@@ -959,13 +999,13 @@ function applyFilters() {
             case 'artist': v = a.artist.localeCompare(b.artist) || (a.year || 0) - (b.year || 0); break;
             case 'album': v = a.album.localeCompare(b.album); break;
             case 'year': v = (a.year || 0) - (b.year || 0); break;
-            case 'value': v = (a.value2025Num || 0) - (b.value2025Num || 0); break;
+            case 'value': if (hasValue(a) !== hasValue(b)) return hasValue(a) ? -1 : 1; v = (a.value2025Num || 0) - (b.value2025Num || 0); break;
             default: v = 0;
         }
         return v * dir;
     });
 
-    st.page = 1;
+    if (!preservePage) st.page = 1;
     updateStats();
     renderChips();
     buildTableHead();
@@ -984,11 +1024,12 @@ function updateStats() {
     $('stTotal').textContent = src.length.toLocaleString();
     $('stTotalNote').textContent = isFiltered ? `of ${records.length}` : '';
     $('stArtists').textContent = artists.size;
-    $('stValue').textContent = '$' + Math.round(total).toLocaleString();
-    $('stAvg').textContent = src.length ? '$' + Math.round(total / src.length) : '$0';
+    const valued = src.filter(hasValue).length;
+    $('stValue').textContent = valued ? '$' + Math.round(total).toLocaleString() : '—';
+    $('stAvg').textContent = valued ? '$' + Math.round(total / valued) : '—';
     $('stYears').textContent = years.length ? Math.min(...years) + '–' + Math.max(...years) : '—';
     const cn = COND.find(c => c.k === condKey);
-    if ($('stValueNote')) $('stValueNote').textContent = cn ? `at ${cn.k}` : '';
+    if ($('stValueNote')) $('stValueNote').textContent = `at ${cn.k} · ${valued}/${src.length} valued`;
 }
 
 /* ═══ CHIPS ═══ */
@@ -1048,6 +1089,7 @@ function onFavClick(ev) {
     btn.textContent = on ? '★' : '☆';
     btn.setAttribute('aria-pressed', String(on));
     btn.setAttribute('title', on ? 'Remove from favorites' : 'Add to favorites');
+    btn.setAttribute('aria-label', on ? 'Remove from favorites' : 'Add to favorites');
     if (st.favsOnly) applyFilters();
 }
 
@@ -1080,9 +1122,10 @@ function clearFavsOnly() { st.favsOnly = false; $('favToggleBtn').classList.remo
 /* ═══ RENDER ═══ */
 function render() {
     const total = filtered.length;
-    const pp = st.perPage || total;
+    const pp = st.perPage || Math.max(total, 1);
     const totalPages = Math.max(1, Math.ceil(total / pp));
-    if (st.page > totalPages) st.page = totalPages;
+    st.page = Math.max(1, Math.min(st.page, totalPages));
+    writeUrlState();
     const start = (st.page - 1) * pp;
     const page = filtered.slice(start, start + pp);
 
@@ -1105,7 +1148,7 @@ function renderGrid(recs, startIdx) {
         return `<article class="card" style="animation-delay:${delay}ms">
             <div class="card-img" data-img="${esc(r.image || '')}" onclick="clickImg(this)" role="button" tabindex="0" aria-label="View cover for ${esc(r.album)} by ${esc(r.artist)}">
                 <button class="fav-btn${fav ? ' on' : ''}" title="${fav ? 'Remove from favorites' : 'Add to favorites'}" aria-label="${fav ? 'Remove from favorites' : 'Add to favorites'}" aria-pressed="${fav}" data-favkey="${esc(favKey)}" onclick="onFavClick(event)">${fav ? '★' : '☆'}</button>
-                ${r.image ? `<img src="${esc(r.image)}" alt="${esc(r.album)} by ${esc(r.artist)}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'no-img\\'>🎵</div>'">` : '<div class="no-img" aria-label="No cover image">🎵</div>'}
+                ${r.image ? `<img src="${esc(r.image)}" alt="${esc(r.album)} by ${esc(r.artist)}" loading="lazy" onerror="imageFallback(this)">` : '<div class="no-img" aria-label="No cover image">🎵</div>'}
             </div>
             <div class="card-body">
                 <div class="card-artist">${highlightMatch(r.artist, s)}</div>
@@ -1140,7 +1183,7 @@ function renderTable(recs, startIdx) {
         const favKey = `${r.artist}\u0001${r.album}\u0001${r.year || ''}`;
         return `<tr>
         <td class="tc-num">${startIdx + i + 1}</td>
-        <td class="tc-fav${fav ? ' on' : ''}" data-favkey="${esc(favKey)}" onclick="onFavClick(event)" title="${fav ? 'Unfavorite' : 'Favorite'}" role="button" aria-pressed="${fav}" aria-label="${fav ? 'Remove from favorites' : 'Add to favorites'}">${fav ? '★' : '☆'}</td>
+        <td class="tc-fav${fav ? ' on' : ''}" data-favkey="${esc(favKey)}" onclick="onFavClick(event)" title="${fav ? 'Unfavorite' : 'Favorite'}" role="button" tabindex="0" aria-pressed="${fav}" aria-label="${fav ? 'Remove from favorites' : 'Add to favorites'}">${fav ? '★' : '☆'}</td>
         <td class="tc-artist">${highlightMatch(r.artist, s)}</td>
         <td>${highlightMatch(r.album, s)}</td>
         <td class="tc-year">${r.year || '—'}</td>
@@ -1172,7 +1215,7 @@ function renderPager(totalPages) {
 }
 
 function goPage(p) {
-    const pp = st.perPage || filtered.length;
+    const pp = st.perPage || Math.max(filtered.length, 1);
     const max = Math.max(1, Math.ceil(filtered.length / pp));
     if (p < 1 || p > max) return;
     st.page = p;
@@ -1240,7 +1283,6 @@ function writeUrlState() {
 
 function readUrlState() {
     const h = location.hash.replace(/^#/, '');
-    if (!h) return;
     const p = new URLSearchParams(h);
     st.search = p.get('q') || '';
     st.yearMin = p.get('from') || '';
@@ -1248,12 +1290,12 @@ function readUrlState() {
     st.artist = p.get('artist') || '';
     st.pressing = p.get('pressing') || '';
     st.favsOnly = p.get('fav') === '1';
-    st.sort = p.get('sort') || 'artist';
+    st.sort = ['artist','album','year','value'].includes(p.get('sort')) ? p.get('sort') : 'artist';
     st.sortAsc = p.get('dir') !== 'desc';
     st.view = p.get('view') === 'table' ? 'table' : 'grid';
     st.page = Math.max(1, parseInt(p.get('page')) || 1);
     const pp = parseInt(p.get('pp'));
-    if ([24,48,96,0].includes(pp)) st.perPage = pp;
+    st.perPage = [24,48,96,0].includes(pp) ? pp : 48;
 
     // Sync UI
     $('searchBox').value = st.search;
@@ -1284,28 +1326,52 @@ function toggleFilters() {
     $('filterToggleChevron').textContent = collapsed ? '▸' : '▾';
 }
 
+/* Dialogs retain keyboard focus and return it to the opener. */
+let dialogOpener = null;
+function showDialog(id) {
+    dialogOpener = document.activeElement;
+    $(id).classList.add('on');
+    document.body.style.overflow = 'hidden';
+    $(id).querySelector('button').focus();
+}
+function hideDialog(id) {
+    $(id).classList.remove('on');
+    document.body.style.overflow = '';
+    if (dialogOpener && dialogOpener.isConnected) dialogOpener.focus();
+}
+
 /* ═══ SHORTCUTS MODAL ═══ */
-function openShortcuts() { $('scModal').classList.add('on'); document.body.style.overflow = 'hidden'; }
-function closeShortcuts() { $('scModal').classList.remove('on'); document.body.style.overflow = ''; }
+function openShortcuts() { showDialog('scModal'); }
+function closeShortcuts() { hideDialog('scModal'); }
 
 /* ═══ LIGHTBOX ═══ */
-function openLightbox(src) { $('lbImg').src = src; $('lightbox').classList.add('on'); document.body.style.overflow = 'hidden'; }
-function closeLightbox() { $('lightbox').classList.remove('on'); document.body.style.overflow = ''; }
+function openLightbox(src) { $('lbImg').src = src; showDialog('lightbox'); }
+function closeLightbox() { hideDialog('lightbox'); }
 
 /* ═══ RANDOM ═══ */
-function openRandom() { $('rndModal').classList.add('on'); document.body.style.overflow = 'hidden'; spinRandom(); }
-function closeRandom() { $('rndModal').classList.remove('on'); document.body.style.overflow = ''; }
+function openRandom() { spinRandom(); showDialog('rndModal'); }
+function closeRandom() { hideDialog('rndModal'); }
 function spinRandom() {
-    const pool = filtered.length && filtered.length < records.length ? filtered : records;
+    const pool = filtered;
+    if (!pool.length) {
+        currentRandomRec = null;
+        $('rndImg').innerHTML = '<div class="no-img">🎵</div>';
+        $('rndArtist').textContent = 'No matching records';
+        $('rndAlbum').textContent = 'Clear a filter to make a random pick.';
+        ['rndDetail','rndFact','rndVal','rndScope'].forEach(id => $(id).textContent = '');
+        document.querySelectorAll('.rnd-actions button').forEach(b => b.disabled = true);
+        return;
+    }
+    document.querySelectorAll('.rnd-actions button').forEach(b => b.disabled = false);
     const r = pool[Math.floor(Math.random() * pool.length)];
     currentRandomRec = r;
-    $('rndImg').innerHTML = r.image ? `<img src="${esc(r.image)}" alt="${esc(r.album)}">` : '<div class="no-img">🎵</div>';
+    $('rndImg').innerHTML = r.image ? `<img src="${esc(r.image)}" alt="${esc(r.album)}" onerror="imageFallback(this)">` : '<div class="no-img">🎵</div>';
     $('rndArtist').textContent = r.artist;
     $('rndAlbum').textContent = r.album;
     $('rndDetail').textContent = `${r.year || 'Unknown'} · ${r.label || ''}`;
     $('rndFact').textContent = r.interestingFact || '';
     $('rndFact').style.display = r.interestingFact ? 'block' : 'none';
-    $('rndVal').textContent = r.value2025Num ? `Est. value (${condKey}): ${valRange(r.value2025Num)}` : '';
+    $('rndVal').textContent = `Est. value (${condKey}): ${valRange(r.value2025Num)}`;
     $('rndScope').textContent = pool.length < records.length ? `Picking from ${pool.length} filtered records` : `Picking from all ${records.length} records`;
     updateRndFavUI();
 }
@@ -1322,6 +1388,7 @@ function updateRndFavUI() {
 function rndToggleFav() {
     if (!currentRandomRec) return;
     toggleFav(currentRandomRec);
+    applyFilters(true);
     updateRndFavUI();
 }
 
@@ -1329,10 +1396,10 @@ function rndViewInBrowse() {
     if (!currentRandomRec) return;
     // Clear filters, set a search for the exact album, and jump to browse
     st.search = currentRandomRec.album;
-    st.yearMin = ''; st.yearMax = ''; st.artist = ''; st.pressing = ''; st.favsOnly = false;
+    st.yearMin = ''; st.yearMax = ''; st.artist = currentRandomRec.artist; st.pressing = ''; st.favsOnly = false;
     $('searchBox').value = st.search;
     $('yearMin').value = ''; $('yearMax').value = '';
-    $('artistBox').value = ''; $('pressingBox').value = '';
+    $('artistBox').value = st.artist; $('pressingBox').value = '';
     $('favToggleBtn').classList.remove('active');
     $('favToggleBtn').setAttribute('aria-pressed', 'false');
     closeRandom();
@@ -1345,11 +1412,12 @@ function rndViewInBrowse() {
 function exportCSV() {
     const gradeLabel = (COND.find(c => c.k === condKey) || {}).label || condKey;
     const h = ['Favorite','Artist','Album','Year','Label','Pressing','Chart Position','Value 1980','Value 2000','Value 2025 (NM)',`Value 2025 (${condKey})`,'Interesting Fact'];
-    const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const q = v => { let text = String(v ?? ''); if (/^[=+@\-\t\r]/.test(text)) text = "'" + text; return `"${text.replace(/"/g, '""')}"`; };
     const rows = filtered.map(r => [isFav(r) ? 'Yes' : '', r.artist, r.album, r.year, r.label, r.pressing, r.chartPosition, r.value1980, r.value2000, r.value2025, valRange(r.value2025Num), r.interestingFact].map(q).join(','));
     const blob = new Blob(['\uFEFF' + [h.join(','), ...rows].join('\n')], { type: 'text/csv;charset=utf-8' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
     a.download = `freds-vinyl-vault-${condKey.replace('+','plus')}.csv`; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
 /* ═══ ANALYTICS ═══ */
@@ -1409,8 +1477,8 @@ function renderAnalytics() {
     const minY = years[0] || 1960, maxY = years[years.length - 1] || 2020;
     const maxYearCount = Math.max(...Object.values(yearCounts), 1);
 
-    // Top value gainers since 1980 (multiplier)
-    const gainers = records
+    // Compare only releases that existed in 1980 and have both estimates.
+    const gainers = records.filter(r => r.year && r.year <= 1980 && hasValue(r))
         .map(r => {
             const v80 = parseMidValue(r.value1980);
             const v25 = adj(r.value2025Num);
@@ -1448,12 +1516,9 @@ function renderAnalytics() {
         <div class="a-card"><h3>📈 Value Over Time (est. midpoint)</h3><div class="bars">
             ${[{l:'~1980',v:v80,c:'var(--purple)'},{l:'~2000',v:v00,c:'var(--blue)'},{l:'2025',v:v25,c:'var(--green)'}].map(({l,v,c}) => `<div class="bar-r"><div class="bar-l">${l}</div><div class="bar-t"><div class="bar-f" style="width:${(v/v25*100).toFixed(1)}%;background:${c}">$${Math.round(v).toLocaleString()}</div></div><div class="bar-v"></div></div>`).join('')}
         </div>
-        <div style="margin-top:14px;font-size:0.82rem;color:var(--text-3)">
-            Since ~1980: <span style="color:var(--green);font-weight:600">+${((v25/v80-1)*100).toFixed(0)}%</span>
-            &nbsp;·&nbsp; Since ~2000: <span style="color:var(--green);font-weight:600">+${((v25/v00-1)*100).toFixed(0)}%</span>
-        </div></div>
+        <p style="margin-top:14px;font-size:0.82rem;color:var(--text-3)">Stored estimates only. Each year covers a different set of records; these totals do not measure investment returns. Unassessed values are excluded.</p></div>
 
-        <div class="a-card"><h3>🚀 Biggest Gainers Since ~1980</h3><div class="tl">
+        <div class="a-card"><h3>🚀 Largest Estimated Multiples Since ~1980</h3><div class="tl">
             ${gainers.length ? gainers.map((g,i) => `<div class="tl-i"><div class="tl-r ${i<3?'gld':''}">${i+1}</div><div class="tl-info"><div class="tl-name">${esc(g.r.artist)} — ${esc(g.r.album)}</div><div class="tl-sub">${g.r.year||''} · $${g.v80} → $${g.v25}</div></div><div class="tl-val">${g.mult.toFixed(1)}×</div></div>`).join('') : '<div style="color:var(--text-3);font-size:0.84rem">No comparable 1980 values.</div>'}
         </div></div>
 
@@ -1497,7 +1562,10 @@ function refreshAbout() {
     if ($('abTotal')) $('abTotal').textContent = records.length.toLocaleString() + ' vinyl records';
     if ($('abSpan')) $('abSpan').textContent = span;
     if ($('abValue')) $('abValue').textContent = '$' + Math.round(total).toLocaleString();
-    if ($('abValueGrade')) $('abValueGrade').textContent = cn ? `(at ${cn.label})` : '';
+    if ($('abValueGrade')) $('abValueGrade').textContent = cn ? `(at ${cn.label}; ${records.filter(hasValue).length}/${records.length} valued)` : '';
+    const counts = {};
+    records.forEach(r => counts[r.artist] = (counts[r.artist] || 0) + 1);
+    $('abArtists').innerHTML = Object.entries(counts).sort((a,b) => b[1]-a[1]).slice(0,5).map(([a,n]) => `<li>${esc(a)} — ${n} records</li>`).join('');
     const top = $('abTop');
     if (top) {
         const recs = [...records].sort((a, b) => (b.value2025Num || 0) - (a.value2025Num || 0)).slice(0, 5);
